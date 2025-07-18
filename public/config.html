@@ -26,19 +26,19 @@
         <label class="form-check-label" for="motionToggle">Enable motion detection screen wakeup?</label>
       </div>
 
-      <label for="thresholdSlider" class="form-label mt-3">Motion sensetivity: <span id="thresholdValue"></span></label>
-      <span>High:</span><input type="range" class="form-range" id="thresholdSlider" min="0" max="15"><span>Low:</span>
+      <label for="motionThresholdSlider" class="form-label mt-3">Motion sensetivity: <span id="motionThresholdValue"></span></label>
+      <span>High:</span><input type="range" class="form-range" id="motionThresholdSlider" min="0" max="15"><span>Low:</span>
     </div>
   </div>
 
   <div class="card mb-4">
     <div class="card-header">Screen Settings</div>
     <div class="card-body">
-      <label for="brightnessSlider" class="form-label">Brightness: <span id="brightnessValue"></span></label>
-      <input type="range" class="form-range" id="brightnessSlider" min="0" max="255">
+      <label for="screenBrightnessSlider" class="form-label">Brightness: <span id="screenBrightnessValue"></span></label>
+      <input type="range" class="form-range" id="screenBrightnessSlider" min="0" max="255">
 	  <br />
-	  <label for="timeoutSlider" class="form-label">Timeout: <span id="timeoutValue"></span></label>
-      <input type="range" class="form-range" id="timeoutSlider" min="0" max="255">
+	  <label for="screenTimeoutSlider" class="form-label">Timeout: <span id="timeoutValue"></span></label>
+      <input type="range" class="form-range" id="screenTimeoutSlider" min="0" max="255">
     </div>
   </div>
 	<!-- Buttons -->
@@ -57,9 +57,9 @@
 
 <script>
 	const motionEnable = document.getElementById('motionToggle');
-	const thresholdSlider = document.getElementById('thresholdSlider');
-	const brightnessSlider = document.getElementById('brightnessSlider');
-	const timeoutSlider = document.getElementById('timeoutSlider');
+	const motionThresholdSlider = document.getElementById('motionThresholdSlider');
+	const screenBrightnessSlider = document.getElementById('screenBrightnessSlider');
+	const screenTimeoutSlider = document.getElementById('screenTimeoutSlider');
 	
 	// Add an event listener to handle enabling or disabling the motion
 	motionEnable.addEventListener('checked', () => {
@@ -80,12 +80,12 @@
 		.catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	});
 
-	thresholdSlider.addEventListener('input', () => {
-	  document.getElementById('thresholdValue').textContent = thresholdSlider.value;
+	motionThresholdSlider.addEventListener('input', () => {
+	  document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
 	});
   
-	brightnessSlider.addEventListener('input', () => {
-	  document.getElementById('brightnessValue').textContent = brightnessSlider.value;
+	screenBrightnessSlider.addEventListener('input', () => {
+	  document.getElementById('screenBrightnessValue').textContent = screenBrightnessSlider.value;
 	});
 
 	function showMessage(message, type = 'info') {
@@ -100,7 +100,7 @@
 	  fetch('/motion/threshold', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ threshold: parseInt(thresholdSlider.value) })
+		body: JSON.stringify({ threshold: parseInt(motionThresholdSlider.value) })
 	  })
 	  .then(res => res.text())
 	  .then(data => showMessage(data, 'success'))
@@ -111,7 +111,7 @@
 	  fetch('/screen/brightness', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ brightness: parseInt(brightnessSlider.value) })
+		body: JSON.stringify({ brightness: parseInt(screenBrightnessSlider.value) })
 	  })
 	  .then(res => res.text())
 	  .then(data => showMessage(data, 'success'))
@@ -126,7 +126,7 @@
 	}
   
 	// 🔁 Initialize brightness slider from endpoints
-	async function initBrightnessSlider() {
+	async function initScreenBrightnessSlider() {
 	  try {
 		const [maxRes, currentRes] = await Promise.all([
 		  fetch('/screen/brightness'),
@@ -135,9 +135,9 @@
 		const max = parseInt(await maxRes.text());
 		const current = parseInt(await currentRes.text());
   
-		brightnessSlider.max = max;
-		brightnessSlider.value = current;
-		document.getElementById('brightnessValue').textContent = current;
+		screenBrightnessSlider.max = max;
+		screenBrightnessSlider.value = current;
+		document.getElementById('screenBrightnessValue').textContent = current;
 	  } catch (err) {
 		showMessage('Error loading brightness settings: ' + err, 'danger');
 	  }
@@ -178,7 +178,7 @@
 	
 	// On page load
 	window.addEventListener('DOMContentLoaded', () => {
-	  initBrightnessSlider();
+	  initScreenBrightnessSlider();
 	  initScreenTimeoutSlider();
 	  initMotion();
 	});
