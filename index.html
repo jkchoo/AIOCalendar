@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Device Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+	
+  <h1 class="mb-4">Device Control Panel</h1> 
+  
+  <!-- Alert Message -->
+  <div id="messageArea" class="alert d-none" role="alert"></div>
+
+  <div class="card mb-4">
+    <div class="card-header">Motion Control</div>
+    <div class="card-body">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="motionToggle">
+        <label class="form-check-label" for="motionToggle">Enable motion.py</label>
+      </div>
+
+      <label for="thresholdSlider" class="form-label mt-3">Motion Threshold: <span id="thresholdValue"></span></label>
+      <input type="range" class="form-range" id="thresholdSlider" min="0" max="100">
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">Screen Settings</div>
+    <div class="card-body">
+      <label for="brightnessSlider" class="form-label">Brightness: <span id="brightnessValue"></span></label>
+      <input type="range" class="form-range" id="brightnessSlider" min="0" max="255">
+    </div>
+  </div>
+	<!-- Buttons -->
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-success" onclick="setThreshold()">Set Threshold</button>
+	</div>
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-warning" onclick="setBrightness()">Set Brightness</button>
+	</div>
+
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-primary" onclick="runUpdate()">Run Update</button>
+	</div>
+	</div>
+</div>
+
+<script>
+	const thresholdSlider = document.getElementById('thresholdSlider');
+	const brightnessSlider = document.getElementById('brightnessSlider');
+  
+	thresholdSlider.addEventListener('input', () => {
+	  document.getElementById('thresholdValue').textContent = thresholdSlider.value;
+	});
+  
+	brightnessSlider.addEventListener('input', () => {
+	  document.getElementById('brightnessValue').textContent = brightnessSlider.value;
+	});
+  
+	function showMessage(message, type = 'info') {
+	  const alertBox = document.getElementById('messageArea');
+	  alertBox.className = `alert alert-${type}`;
+	  alertBox.textContent = message;
+	  alertBox.classList.remove('d-none');
+	  setTimeout(() => alertBox.classList.add('d-none'), 5000);
+	}
+  
+	function setThreshold() {
+	  fetch('/motion/threshold', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ threshold: parseInt(thresholdSlider.value) })
+	  })
+	  .then(res => res.text())
+	  .then(data => showMessage(data, 'success'))
+	  .catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
+	}
+  
+	function setBrightness() {
+	  fetch('/screen/brightness', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ brightness: parseInt(brightnessSlider.value) })
+	  })
+	  .then(res => res.text())
+	  .then(data => showMessage(data, 'success'))
+	  .catch(err => showMessage('Failed to set brightness: ' + err, 'danger'));
+	}
+  
+	function runUpdate() {
+	  fetch('/update', { method: 'POST' })
+		.then(res => res.text())
+		.then(data => showMessage(data, 'info'))
+		.catch(err => showMessage('Update failed: ' + err, 'danger'));
+	}
+  
+	// 🔁 Initialize brightness slider from endpoints
+	async function initBrightnessSlider() {
+	  try {
+		const [maxRes, currentRes] = await Promise.all([
+		  fetch('/screen/brightness/max'),
+		  fetch('/screen/brightness/current')
+		]);
+  
+		const max = parseInt(await maxRes.text());
+		const current = parseInt(await currentRes.text());
+  
+		brightnessSlider.max = max;
+		brightnessSlider.value = current;
+		document.getElementById('brightnessValue').textContent = current;
+	  } catch (err) {
+		showMessage('Error loading brightness settings: ' + err, 'danger');
+	  }
+	}
+  
+	// On page load
+	window.addEventListener('DOMContentLoaded', () => {
+	  initBrightnessSlider();
+	});
+</script>
+
+</body>
+</html>
