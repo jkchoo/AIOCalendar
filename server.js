@@ -243,6 +243,25 @@ app.post('/screen/timeout/:minutes', (req, res) => {
   });
 });
 
+// This fetches the currently set Screen Timeout
+app.get('/screen/timeout', (req, res) => {
+  exec('xset q', (err, stdout) => {
+    if (err) {
+      console.error('Error reading xset:', err.message);
+      return res.status(500).json({ error: 'Failed to read timeout' });
+    }
+
+    const match = stdout.match(/Standby:\s+(\d+)/);
+    const timeout = match ? parseInt(match[1]) : null;
+
+    if (timeout !== null) {
+      res.json({ timeout });
+    } else {
+      res.status(500).json({ error: 'Could not parse timeout from xset' });
+    }
+  });
+});
+
 app.post('/combine/:folderName', (req, res) => {
   console.log("Request from " + req.socket.remoteAddress);
   const folderName = req.params.folderName;
