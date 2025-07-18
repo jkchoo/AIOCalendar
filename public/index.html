@@ -38,14 +38,18 @@
       <input type="range" class="form-range" id="brightnessSlider" min="0" max="255">
     </div>
   </div>
+	<!-- Buttons -->
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-success" onclick="setThreshold()">Set Threshold</button>
+	</div>
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-warning" onclick="setBrightness()">Set Brightness</button>
+	</div>
 
-  <div class="card mb-4">
-    <div class="card-header">Current Configuration</div>
-    <div class="card-body">
-      <pre id="configOutput" class="bg-light p-2 border rounded small"></pre>
-    </div>
-  </div>
-
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-primary" onclick="runUpdate()">Run Update</button>
+	</div>
+	</div>
 </div>
 
 <script>
