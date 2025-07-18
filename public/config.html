@@ -55,7 +55,7 @@
 		<option value="60">1 hour</option>
 		<option value="90">1 hour 30 minutes</option>
 		<option value="120">2 hours</option>
-		  <option value="240">4 hours</option>
+		<option value="240">4 hours</option>
 	  </select>
     </div>
   </div>
@@ -79,6 +79,31 @@
 	const screenBrightnessSlider = document.getElementById('screenBrightnessSlider');
 	const screenTimeoutSelect = document.getElementById('screenTimeoutSelect');
 	
+	// Add an event listener to handle changing the value of the screen timeout
+	screenTimeoutSelect.addEventListener('click', updateScreenTimeout);
+
+	async function updateScreenTimeout() {
+		minutes = screenTimeoutSelect.value;
+		//make the request
+		const res = await fetch('/screen/timeout/'+minutes);
+
+		if (!res.ok) {
+			let errorMsg = `Server returned ${res.status} ${res.statusText}`;
+			try {
+				const errorData = await res.json();
+				if (errorData && errorData.error) {
+					errorMsg = `Server returned ${errorData.error}`;
+				}
+			} catch (parseErr) {
+				// JSON parsing failed — keep default errorMsg
+			}
+			showMessage('Error loading brightness settings: ' + errorMsg, 'danger');
+			return;
+		}
+
+		showMessage('Saved', 'info');
+	}
+
 	// Add an event listener to handle enabling or disabling the motion
 	motionEnable.addEventListener('click', () => {
 		let motionEnabled = motionEnable.checked;
@@ -122,10 +147,7 @@
 	  alertBox.classList.remove('d-none');
 	  setTimeout(() => alertBox.classList.add('d-none'), 5000);
 	}
-  
-	function setThreshold() {
-	}
-  
+    
 	function setBrightness() {
 	  fetch('/screen/brightness', {
 		method: 'POST',
