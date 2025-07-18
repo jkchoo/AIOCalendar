@@ -66,10 +66,10 @@
 		let motionEnabled = motionEnable.checked;
 		let motionURL = '';
 		if(motionEnabled) {
-			motionURL = '/motion/enable'
+			motionURL = '/motion/enable';
 		}
 		else {
-			motionURL = '/motion/disable'
+			motionURL = '/motion/disable';
 		}
 		fetch(motionURL, {
 			method: 'POST',
@@ -77,6 +77,7 @@
 		})
 		.then(res => res.text())
 		.then(data => showMessage(data, 'success'))
+		.then(data => motionThresholdSlider.disabled = !motionEnabled)
 		.catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	});
 
@@ -173,7 +174,10 @@
 			.then(res => res.json())
 			.then(data => {
 				document.getElementById('motionToggle').checked = data.enabled;
-				document.getElementById('motionThresholdSlider').value = data.threshold;
+				if(!data.enabled) {
+					motionThresholdSlider.disabled = true;
+				}
+				motionThresholdSlider.value = data.threshold;
 			})
 			.catch(console.error);
 		} catch(err) {
