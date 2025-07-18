@@ -122,6 +122,11 @@
 	  fetch('/update', { method: 'POST' })
 		.then(res => res.text())
 		.then(data => showMessage(data, 'info'))
+		.then(function() {
+			setTimeout(function() {
+				window.location = window.location;
+			}, 1000)
+		})
 		.catch(err => showMessage('Update failed: ' + err, 'danger'));
 	}
   

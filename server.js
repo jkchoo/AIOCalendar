@@ -30,38 +30,40 @@ app.get('/', (req, res) => {
 app.post('/update', (req, res) => {
   console.log("Starting update from Git...");
 
+  // Respond immediately to the web UI
+  res.status(200).send("Update started. Service will restart if update is successful.");
+
+  // Begin Git pull in background
   const gitPull = exec("git pull", { cwd: rootPath });
 
   let gitOutput = '';
 
   gitPull.stdout.on('data', (data) => {
-      console.log("Git stdout:", data.toString());
-      gitOutput += data.toString();
+    console.log("Git stdout:", data.toString());
+    gitOutput += data.toString();
   });
 
   gitPull.stderr.on('data', (data) => {
-      console.error("Git stderr:", data.toString());
-      gitOutput += data.toString();
+    console.error("Git stderr:", data.toString());
+    gitOutput += data.toString();
   });
 
   gitPull.on('exit', (code) => {
-      if (code === 0) {
-          console.log("Git pull complete. Restarting webui.service...");
-          const restartService = exec("sudo systemctl restart webui.service");
+    if (code === 0) {
+      console.log("Git pull complete. Restarting webui.service...");
+      const restartService = exec("sudo systemctl restart webui.service");
 
-          restartService.on('exit', (restartCode) => {
-              if (restartCode === 0) {
-                  console.log("Service restarted successfully.");
-                  res.status(200).send("Update completed and service restarted.");
-              } else {
-                  console.error("Failed to restart service.");
-                  res.status(500).send("Update pulled, but failed to restart service.");
-              }
-          });
-      } else {
-          console.error("Git pull failed.");
-          res.status(500).send("Failed to update from Git.");
-      }
+      restartService.on('exit', (restartCode) => {
+        if (restartCode === 0) {
+          console.log("Service restarted successfully.");
+        } else {
+          console.error("Failed to restart service.");
+        }
+      });
+
+    } else {
+      console.error("Git pull failed with code:", code);
+    }
   });
 });
 
