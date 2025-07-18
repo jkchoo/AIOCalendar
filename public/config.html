@@ -56,10 +56,30 @@
 </div>
 
 <script>
+	const motionEnable = document.getElementById('motionToggle');
 	const thresholdSlider = document.getElementById('thresholdSlider');
 	const brightnessSlider = document.getElementById('brightnessSlider');
 	const timeoutSlider = document.getElementById('timeoutSlider');
-  
+	
+	// Add an event listener to handle enabling or disabling the motion
+	motionEnable.addEventListener('checked', () => {
+		let motionEnabled = motionEnable.checked;
+		let motionURL = '';
+		if(motionEnabled) {
+			motionURL = '/motion/enable'
+		}
+		else {
+			motionURL = '/motion/disable'
+		}
+		fetch(motionURL, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+		})
+		.then(res => res.text())
+		.then(data => showMessage(data, 'success'))
+		.catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
+	});
+
 	thresholdSlider.addEventListener('input', () => {
 	  document.getElementById('thresholdValue').textContent = thresholdSlider.value;
 	});
@@ -67,7 +87,7 @@
 	brightnessSlider.addEventListener('input', () => {
 	  document.getElementById('brightnessValue').textContent = brightnessSlider.value;
 	});
-  
+
 	function showMessage(message, type = 'info') {
 	  const alertBox = document.getElementById('messageArea');
 	  alertBox.className = `alert alert-${type}`;
