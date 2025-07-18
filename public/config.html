@@ -62,8 +62,8 @@
 	const screenTimeoutSlider = document.getElementById('screenTimeoutSlider');
 	
 	// Add an event listener to handle enabling or disabling the motion
-	motionEnable.addEventListener('checked', () => {
-		let motionEnabled = motionEnable.checked;
+	motionEnable.addEventListener('click', () => {
+		let motionEnabled = this.checked;
 		let motionURL = '';
 		if(motionEnabled) {
 			motionURL = '/motion/enable'
