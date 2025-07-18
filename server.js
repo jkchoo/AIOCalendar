@@ -277,6 +277,7 @@ app.get('/screen/timeout', (req, res) => {
 
         const seconds = parseInt(stdout.trim().replace(/\D/g, ''));
         const minutes = Math.floor(seconds / 60);
+        console.log("GNOME Screen timeout is " + minutes);
         res.json({ timeout: minutes });
       });
     } else {
@@ -291,6 +292,7 @@ app.get('/screen/timeout', (req, res) => {
 
         if (seconds !== null) {
           const minutes = Math.floor(seconds / 60);
+          console.log("X11 Screen timeout is " + minutes);
           res.json({ timeout: minutes });
         } else {
           res.status(500).json({ error: 'Could not parse timeout from xset' });
