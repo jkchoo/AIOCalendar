@@ -243,6 +243,7 @@ app.post('/screen/timeout/:minutes', (req, res) => {
     if (isGnome) {
   */
     const gsettingsCmd = `gsettings set org.gnome.desktop.session idle-delay ${seconds}`;
+    console.log("Trying to set the screen timeout\n\t" + gsettingsCmd);
     exec(gsettingsCmd, (error, stdout, stderr) => {
       if (error) {
         console.error("GNOME timeout error:", error.message);
