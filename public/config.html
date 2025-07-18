@@ -138,16 +138,18 @@
 	// 🔁 Initialize brightness slider from endpoints
 	async function initScreenBrightnessSlider() {
 	  try {
-		const [maxRes, currentRes] = await Promise.all([
-		  fetch('/screen/brightness')
-		]);
-  
-		const max = parseInt(await maxRes.text());
-		const current = parseInt(await currentRes.text());
-  
-		screenBrightnessSlider.max = max;
-		screenBrightnessSlider.value = current;
-		document.getElementById('screenBrightnessValue').textContent = current;
+	
+		fetch('/screen/brightness')
+			.then(res => res.json())
+			.then(data => {  
+				screenBrightnessSlider.max = data.max;
+				screenBrightnessSlider.value = data.current;
+				document.getElementById('screenBrightnessValue').textContent = data.current;
+			})
+			.catch(err => {
+				screenBrightnessSlider.disabled = true;
+				showMessage('Error loading brightness settings: ' + err, 'danger');
+			});
 	  } catch (err) {
 		showMessage('Error loading brightness settings: ' + err, 'danger');
 	  }
