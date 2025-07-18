@@ -80,12 +80,12 @@
 	const screenTimeoutSelect = document.getElementById('screenTimeoutSelect');
 	
 	// Add an event listener to handle changing the value of the screen timeout
-	screenTimeoutSelect.addEventListener('click', updateScreenTimeout);
+	screenTimeoutSelect.addEventListener('change', updateScreenTimeout);
 
 	async function updateScreenTimeout() {
 		minutes = screenTimeoutSelect.value;
 		//make the request
-		const res = await fetch('/screen/timeout/'+minutes);
+		const res = await fetch('/screen/timeout/'+minutes, { method: 'POST' });
 
 		if (!res.ok) {
 			let errorMsg = `Server returned ${res.status} ${res.statusText}`;
