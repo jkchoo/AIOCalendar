@@ -36,6 +36,9 @@
     <div class="card-body">
       <label for="brightnessSlider" class="form-label">Brightness: <span id="brightnessValue"></span></label>
       <input type="range" class="form-range" id="brightnessSlider" min="0" max="255">
+	  <br />
+	  <label for="timeoutSlider" class="form-label">Screen Timeout: <span id="timeoutValue"></span></label>
+      <input type="range" class="form-range" id="timeoutSlider" min="0" max="255">
     </div>
   </div>
 	<!-- Buttons -->
@@ -55,6 +58,7 @@
 <script>
 	const thresholdSlider = document.getElementById('thresholdSlider');
 	const brightnessSlider = document.getElementById('brightnessSlider');
+	const timeoutSlider = document.getElementById('timeoutSlider');
   
 	thresholdSlider.addEventListener('input', () => {
 	  document.getElementById('thresholdValue').textContent = thresholdSlider.value;
@@ -105,8 +109,7 @@
 	async function initBrightnessSlider() {
 	  try {
 		const [maxRes, currentRes] = await Promise.all([
-		  fetch('/screen/brightness/max'),
-		  fetch('/screen/brightness/current')
+		  fetch('/screen/brightness'),
 		]);
   
 		const max = parseInt(await maxRes.text());
@@ -119,11 +122,53 @@
 		showMessage('Error loading brightness settings: ' + err, 'danger');
 	  }
 	}
-  
+
+	// Initialize Screen Timeout Slider
+	async function initScreenTimeoutSlider() {
+		try {
+		// Fetch screen timeout
+		fetch('/screen/timeout')
+			.then(res => res.json())
+			.then(data => {
+				document.getElementById('screenTimeoutSlider').value = data.timeout;
+			})
+			.catch(console.error);
+		} 
+		catch (err) {
+			showMessage('Error loading screentimeout settings: ' + err, 'danger');
+		}
+	}
+
+	// Initialize the Motion configurations
+	async function initMotion() {
+	// Fetch current motion.py state
+	fetch('/motion/state')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('motionToggle').checked = data.enabled;
+      })
+      .catch(err){
+		showMessage('Error loading brightness settings: ' + err, 'danger');
+	  };
+
+    // Fetch motion threshold value
+    fetch('/motion/threshold')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('motionThresholdSlider').value = data.threshold;
+      })
+      .catch(err){
+		showMessage('Error loading brightness settings: ' + err, 'danger');
+	  };
+	}
+	
 	// On page load
 	window.addEventListener('DOMContentLoaded', () => {
 	  initBrightnessSlider();
+	  initScreenTimeoutSlider();
+	  initMotion();
 	});
+	
 </script>
 
 </body>
