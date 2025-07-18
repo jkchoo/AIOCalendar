@@ -19,7 +19,9 @@ sudo pip3 install eventlet -y;
 sudo apt install git -y;
 
 # Install Node
-sudo apt install nodejs npm -y
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 20
+sudo apt install  npm -y
 # Install Express.js, Multer, fs-extra, and Socket.IO
 npm install express multer fs-extra socket.io;
 
