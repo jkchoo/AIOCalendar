@@ -141,25 +141,26 @@
 
 	// Initialize the Motion configurations
 	async function initMotion() {
-	// Fetch current motion.py state
-	fetch('/motion/state')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('motionToggle').checked = data.enabled;
-      })
-      .catch(err){
-		showMessage('Error loading brightness settings: ' + err, 'danger');
-	  };
+		try{
+			
+			// Fetch current motion.py state
+			fetch('/motion/state')
+			.then(res => res.json())
+			.then(data => {
+				document.getElementById('motionToggle').checked = data.enabled;
+			})
+			.catch(console.error);
 
-    // Fetch motion threshold value
-    fetch('/motion/threshold')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('motionThresholdSlider').value = data.threshold;
-      })
-      .catch(err){
-		showMessage('Error loading brightness settings: ' + err, 'danger');
-	  };
+			// Fetch motion threshold value
+			fetch('/motion/threshold')
+			.then(res => res.json())
+			.then(data => {
+				document.getElementById('motionThresholdSlider').value = data.threshold;
+			})
+			.catch(console.error);	
+		} catch(err) {
+			showMessage('Error loading screentimeout settings: ' + err, 'danger');
+		}
 	}
 	
 	// On page load
