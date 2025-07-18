@@ -129,7 +129,7 @@
 	async function initScreenBrightnessSlider() {
 	  try {
 		const [maxRes, currentRes] = await Promise.all([
-		  fetch('/screen/brightness'),
+		  fetch('/screen/brightness')
 		]);
   
 		const max = parseInt(await maxRes.text());
