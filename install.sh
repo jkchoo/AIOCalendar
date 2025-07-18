@@ -1,6 +1,6 @@
 # Initial setup
 sudo apt update;
-sudo apt upgrade;
+sudo apt upgrade -y;
 
 # Python stuff
 sudo apt install build-essential libpq-dev libssl-dev openssl libffi-dev zlib1g-dev -y;
@@ -8,12 +8,12 @@ sudo apt install python3.12 python3-pip python3.12-dev -y;
 sudo apt install python3-dev libxml2-dev libxslt-dev -y;
 sudo apt install python3-setuptools -y;
 sudo apt install python-all-dev -y;
-sudo easy_install3 pip;
-sudo pip3 install opencv-python;
-sudo pip3 install numpy;
-sudo pip3 install pyautogui;
-sudo apt install libevent-dev;
-sudo pip3 install eventlet;
+sudo easy_install3 pip -y; 
+sudo pip3 install opencv-python -y;
+sudo pip3 install numpy -y;
+sudo pip3 install pyautogui -y;
+sudo apt install libevent-dev -y;
+sudo pip3 install eventlet -y;
 
 # We'll want GIT for later
 sudo apt install git -y;
@@ -21,7 +21,11 @@ sudo apt install git -y;
 # Install Node
 sudo apt install nodejs npm -y
 # Install Express.js, Multer, fs-extra, and Socket.IO
-npm install express multer fs-extra socket.io
+npm install express multer fs-extra socket.io;
+
+# Allow default node to listen on port 80
+sudo apt-get install libcap2-bin -y;
+sudo setcap cap_net_bind_service=+ep `readlink -f \`which node\``;
 
 
 # Set up the webservice
