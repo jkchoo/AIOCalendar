@@ -141,7 +141,15 @@
 			const res = await fetch('/screen/brightness');
 
 			if (!res.ok) {
-				const errorMsg = `Server returned ${res.status} ${res.statusText}`;
+				let errorMsg = `Server returned ${res.status} ${res.statusText}`;
+				try {
+					const errorData = await res.json();
+					if (errorData && errorData.error) {
+					errorMsg = `Server returned ${errorData.error}`;
+					}
+				} catch (parseErr) {
+					// JSON parsing failed — keep default errorMsg
+				}
 				screenBrightnessSlider.disabled = true;
 				showMessage('Error loading brightness settings: ' + errorMsg, 'danger');
 				return;
