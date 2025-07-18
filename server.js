@@ -280,7 +280,7 @@ app.get('/screen/timeout', (req, res) => {
         return res.status(500).json({ error: "Failed to read GNOME screen timeout" });
       }
 
-      const seconds = parseInt(stdout.trim().replace(/\D/g, ''));
+      const seconds = parseInt(stdout.trim().split(' ')[1], 10);
       const minutes = Math.floor(seconds / 60);
       console.log("GNOME Screen timeout is " + minutes);
       res.json({ timeout: minutes });
