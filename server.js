@@ -236,19 +236,22 @@ app.post('/screen/timeout/:minutes', (req, res) => {
   const seconds = minutes * 60;
 
   // Check if we're in GNOME environment
+  /*
   exec('echo $XDG_CURRENT_DESKTOP', (err, stdout) => {
     const isGnome = stdout.toLowerCase().includes('gnome');
 
     if (isGnome) {
-      const gsettingsCmd = `gsettings set org.gnome.desktop.session idle-delay ${seconds}`;
-      exec(gsettingsCmd, (error, stdout, stderr) => {
-        if (error) {
-          console.error("GNOME timeout error:", error.message);
-          return res.status(500).send("Failed to set screen timeout in GNOME");
-        }
-        console.log("GNOME screen timeout set to", minutes, "minutes");
-        res.send("GNOME screen timeout updated");
-      });
+  */
+    const gsettingsCmd = `gsettings set org.gnome.desktop.session idle-delay ${seconds}`;
+    exec(gsettingsCmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error("GNOME timeout error:", error.message);
+        return res.status(500).send("Failed to set screen timeout in GNOME");
+      }
+      console.log("GNOME screen timeout set to", minutes, "minutes");
+      res.send("GNOME screen timeout updated");
+    });
+    /*
     } else {
       const xsetCmd = `xset dpms ${seconds} ${seconds} ${seconds}`;
       exec(xsetCmd, (error, stdout, stderr) => {
@@ -259,27 +262,30 @@ app.post('/screen/timeout/:minutes', (req, res) => {
         console.log("X11 screen timeout set to", minutes, "minutes");
         res.send("X11 screen timeout updated");
       });
-    }
-  });
+    } */
+   //});
 });
 
 // This fetches the currently set Screen Timeout
 app.get('/screen/timeout', (req, res) => {
+  /*
   exec('echo $XDG_CURRENT_DESKTOP', (err, stdout) => {
     const isGnome = stdout.toLowerCase().includes('gnome');
 
     if (isGnome) {
-      exec("gsettings get org.gnome.desktop.session idle-delay", (error, stdout, stderr) => {
-        if (error) {
-          console.error("GNOME read timeout error:", error.message);
-          return res.status(500).json({ error: "Failed to read GNOME screen timeout" });
-        }
+  */
+    exec("gsettings get org.gnome.desktop.session idle-delay", (error, stdout, stderr) => {
+      if (error) {
+        console.error("GNOME read timeout error:", error.message);
+        return res.status(500).json({ error: "Failed to read GNOME screen timeout" });
+      }
 
-        const seconds = parseInt(stdout.trim().replace(/\D/g, ''));
-        const minutes = Math.floor(seconds / 60);
-        console.log("GNOME Screen timeout is " + minutes);
-        res.json({ timeout: minutes });
-      });
+      const seconds = parseInt(stdout.trim().replace(/\D/g, ''));
+      const minutes = Math.floor(seconds / 60);
+      console.log("GNOME Screen timeout is " + minutes);
+      res.json({ timeout: minutes });
+    });
+    /*
     } else {
       exec('xset q', (err, stdout) => {
         if (err) {
@@ -300,67 +306,12 @@ app.get('/screen/timeout', (req, res) => {
       });
     }
   });
-});
-
-app.post('/combine/:folderName', (req, res) => {
-  console.log("Request from " + req.socket.remoteAddress);
-  const folderName = req.params.folderName;
-  //console.log("Received combination mode " + combineMode);
-
-  var command = `./combine_images ${tempDirPath} ${outputPath}  ${combineMode}`;
-  if (combineMode == "S") {
-  	command = command + " 20";
-  }
-  console.log(command);
-  // Execute the command and capture the output
-  const childProcess = exec(command, { cwd: rootPath }); // Set the current working directory for the child process
-
-  // Send the output to the client via socket.io
-  const roomName = folderName; // Use the folderName as the roomName
-  childProcess.stdout.on('data', (data) => {
-    console.log(roomName + " process output " + data.toString());
-    io.to(roomName).emit('output', data.toString()); // Emit the output to the specific room
-  });
-
-  childProcess.stderr.on('data', (data) => {
-    console.log(roomName + " experienced error output " + data.toString());
-    io.to(roomName).emit('output', data.toString()); // Emit the error to the specific room
-  });
-
-  childProcess.on('exit', (code) => {
-    console.log('combine_images process exited with code', code);
-    if (code === 0) {
-      console.log('Image combination completed');
-      res.download(outputPath, 'combined_image.jpg', (err) => {
-        if (err) {
-          console.error('Download error:', err);
-        }
-        fs.readdirSync(tempDirPath).forEach((file) => {
-          const filePath = path.join(tempDirPath, file);
-          if (fs.lstatSync(filePath).isDirectory()) {
-            fs.rmdirSync(filePath, { recursive: true });
-          } else {
-            fs.unlinkSync(filePath);
-          }
-        });
-        // Remove the temporary directory
-        fs.rmdirSync(tempDirPath, { recursive: true, force: true });
-        // Remove the output file if desired
-        // fs.unlinkSync(outputPath);
-      });
-    } else {
-      console.error('combine_images process encountered an error');
-      res.sendStatus(500);
-    }
-  });
+  */
 });
 
 // Set up socket.io
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-
-
-
 
 // Socket.io connection event
 io.on('connection', (socket) => {
