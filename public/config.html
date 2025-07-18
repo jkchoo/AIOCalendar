@@ -63,7 +63,7 @@
 	
 	// Add an event listener to handle enabling or disabling the motion
 	motionEnable.addEventListener('click', () => {
-		let motionEnabled = this.checked;
+		let motionEnabled = motionEnable.checked;
 		let motionURL = '';
 		if(motionEnabled) {
 			motionURL = '/motion/enable'
