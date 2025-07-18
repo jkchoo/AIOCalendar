@@ -229,37 +229,73 @@ app.get('/screen/brightness', (req, res) => {
   }
 });
 
-// This will change how long the scree will wait before going black
 app.post('/screen/timeout/:minutes', (req, res) => {
-  const seconds = parseInt(req.params.minutes, 10)*60;
-  if (isNaN(seconds)) return res.status(400).send('Invalid timeout value');
+  const minutes = parseInt(req.params.minutes, 10);
+  if (isNaN(minutes)) return res.status(400).send('Invalid timeout value');
 
-  const command = `xset dpms ${seconds} ${seconds} ${seconds}`;
-  exec(command, (error, stdout, stderr) => {
-      if (error) {
-          console.error("Timeout error:", error.message);
-          return res.status(500).send("Failed to set screen timeout");
-      }
-      console.log("Screen timeout set to", minutes, "minutes");
-      res.send("Screen timeout updated");
+  const seconds = minutes * 60;
+
+  // Check if we're in GNOME environment
+  exec('echo $XDG_CURRENT_DESKTOP', (err, stdout) => {
+    const isGnome = stdout.toLowerCase().includes('gnome');
+
+    if (isGnome) {
+      const gsettingsCmd = `gsettings set org.gnome.desktop.session idle-delay ${seconds}`;
+      exec(gsettingsCmd, (error, stdout, stderr) => {
+        if (error) {
+          console.error("GNOME timeout error:", error.message);
+          return res.status(500).send("Failed to set screen timeout in GNOME");
+        }
+        console.log("GNOME screen timeout set to", minutes, "minutes");
+        res.send("GNOME screen timeout updated");
+      });
+    } else {
+      const xsetCmd = `xset dpms ${seconds} ${seconds} ${seconds}`;
+      exec(xsetCmd, (error, stdout, stderr) => {
+        if (error) {
+          console.error("X11 timeout error:", error.message);
+          return res.status(500).send("Failed to set screen timeout with xset");
+        }
+        console.log("X11 screen timeout set to", minutes, "minutes");
+        res.send("X11 screen timeout updated");
+      });
+    }
   });
 });
 
 // This fetches the currently set Screen Timeout
 app.get('/screen/timeout', (req, res) => {
-  exec('xset q', (err, stdout) => {
-    if (err) {
-      console.error('Error reading xset:', err.message);
-      return res.status(500).json({ error: 'Failed to read timeout' });
-    }
+  exec('echo $XDG_CURRENT_DESKTOP', (err, stdout) => {
+    const isGnome = stdout.toLowerCase().includes('gnome');
 
-    const match = stdout.match(/Standby:\s+(\d+)/);
-    const timeout = match ? parseInt(match[1]) : null;
+    if (isGnome) {
+      exec("gsettings get org.gnome.desktop.session idle-delay", (error, stdout, stderr) => {
+        if (error) {
+          console.error("GNOME read timeout error:", error.message);
+          return res.status(500).json({ error: "Failed to read GNOME screen timeout" });
+        }
 
-    if (timeout !== null) {
-      res.json({ timeout });
+        const seconds = parseInt(stdout.trim().replace(/\D/g, ''));
+        const minutes = Math.floor(seconds / 60);
+        res.json({ timeout: minutes });
+      });
     } else {
-      res.status(500).json({ error: 'Could not parse timeout from xset' });
+      exec('xset q', (err, stdout) => {
+        if (err) {
+          console.error('X11 error reading xset:', err.message);
+          return res.status(500).json({ error: 'Failed to read timeout with xset' });
+        }
+
+        const match = stdout.match(/Standby:\s+(\d+)/);
+        const seconds = match ? parseInt(match[1]) : null;
+
+        if (seconds !== null) {
+          const minutes = Math.floor(seconds / 60);
+          res.json({ timeout: minutes });
+        } else {
+          res.status(500).json({ error: 'Could not parse timeout from xset' });
+        }
+      });
     }
   });
 });

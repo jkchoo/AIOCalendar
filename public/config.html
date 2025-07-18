@@ -145,7 +145,7 @@
 				try {
 					const errorData = await res.json();
 					if (errorData && errorData.error) {
-					errorMsg = `Server returned ${errorData.error}`;
+						errorMsg = `Server returned ${errorData.error}`;
 					}
 				} catch (parseErr) {
 					// JSON parsing failed — keep default errorMsg
