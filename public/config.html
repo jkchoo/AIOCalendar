@@ -41,8 +41,22 @@
       <label for="screenBrightnessSlider" class="form-label">Brightness: <span id="screenBrightnessValue"></span></label>
       <input type="range" class="form-range" id="screenBrightnessSlider" min="0" max="255">
 	  <br />
-	  <label for="screenTimeoutSlider" class="form-label">Timeout: <span id="timeoutValue"></span></label>
-      <input type="range" class="form-range" id="screenTimeoutSlider" min="0" max="255">
+	  <label for="screenTimeoutSelect" class="form-label">Screen Timeout</label>
+	  <select id="screenTimeoutSelect" class="form-select">
+	  	<option value="1">1 minute</option>
+		<option value="2">2 minutes</option>
+		<option value="3">3 minutes</option>
+		<option value="4">4 minutes</option>
+		<option value="5">5 minutes</option>
+		<option value="10">10 minutes</option>
+		<option value="15">15 minutes</option>
+		<option value="30">30 minutes</option>
+		<option value="45">45 minutes</option>
+		<option value="60">1 hour</option>
+		<option value="90">1 hour 30 minutes</option>
+		<option value="120">2 hours</option>
+		  <option value="240">4 hours</option>
+	  </select>
     </div>
   </div>
 	<!-- Buttons -->
@@ -63,7 +77,7 @@
 	const motionEnable = document.getElementById('motionToggle');
 	const motionThresholdSlider = document.getElementById('motionThresholdSlider');
 	const screenBrightnessSlider = document.getElementById('screenBrightnessSlider');
-	const screenTimeoutSlider = document.getElementById('screenTimeoutSlider');
+	const screenTimeoutSelect = document.getElementById('screenTimeoutSelect');
 	
 	// Add an event listener to handle enabling or disabling the motion
 	motionEnable.addEventListener('click', () => {
@@ -87,6 +101,14 @@
 
 	motionThresholdSlider.addEventListener('input', () => {
 	  document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
+	  fetch('/motion/threshold', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ threshold: parseInt(motionThresholdSlider.value) })
+	  })
+	  .then(res => res.text())
+	  .then(data => showMessage(data, 'success'))
+	  .catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	});
   
 	screenBrightnessSlider.addEventListener('input', () => {
@@ -102,14 +124,6 @@
 	}
   
 	function setThreshold() {
-	  fetch('/motion/threshold', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ threshold: parseInt(motionThresholdSlider.value) })
-	  })
-	  .then(res => res.text())
-	  .then(data => showMessage(data, 'success'))
-	  .catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	}
   
 	function setBrightness() {
@@ -167,13 +181,13 @@
 	}
 
 	// Initialize Screen Timeout Slider
-	async function initScreenTimeoutSlider() {
+	async function initScreenTimeoutSelect() {
 		try {
 		// Fetch screen timeout
 		fetch('/screen/timeout')
 			.then(res => res.json())
 			.then(data => {
-				document.getElementById('screenTimeoutSlider').value = data.timeout;
+				document.getElementById('screenTimeoutSelect').value = data.timeout;
 			})
 			.catch(console.error);
 		} 
