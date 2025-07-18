@@ -144,20 +144,13 @@
 		try{
 			
 			// Fetch current motion.py state
-			fetch('/motion/state')
+			fetch('/motion/config')
 			.then(res => res.json())
 			.then(data => {
 				document.getElementById('motionToggle').checked = data.enabled;
-			})
-			.catch(console.error);
-
-			// Fetch motion threshold value
-			fetch('/motion/threshold')
-			.then(res => res.json())
-			.then(data => {
 				document.getElementById('motionThresholdSlider').value = data.threshold;
 			})
-			.catch(console.error);	
+			.catch(console.error);
 		} catch(err) {
 			showMessage('Error loading screentimeout settings: ' + err, 'danger');
 		}
