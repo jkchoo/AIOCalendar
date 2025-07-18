@@ -164,8 +164,8 @@ app.get('/motion/config', (req, res) => {
 
     const configData = JSON.parse(fs.readFileSync(configPath));
     const response = {
-      enabled: configData.enabled ?? false,
-      threshold: configData.threshold ?? null
+      enabled: configData.enabled,
+      threshold: configData.threshold
     };
 
     res.json(response);
