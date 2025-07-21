@@ -318,7 +318,7 @@ app.post('/homescreen/:url', (req, res) =>{
 });
 
 // This will retrieve the current home page of the AIO Calendar
-app.post('/homescreen', (req, res) => {
+app.get('/homescreen', (req, res) => {
   console.error("Call to set homescreen url. Not implemented yet");
   res.status(500).json({error: 'Not implemented'});
 });
