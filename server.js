@@ -90,7 +90,7 @@ app.post('/motion/enable', (req, res) => {
       if (error) {
           console.error("Failed to start motion.py:", error.message);
           return res.status(500).send("Failed to start motion.py");
-      }      
+      }
 
       // Then we're good
       console.log("motion.py started and config updated");
@@ -101,7 +101,7 @@ app.post('/motion/enable', (req, res) => {
 // Disable the motion waking up
 app.post('/motion/disable', (req, res) => {
   console.log("Disabling motion.py from " + req.socket.remoteAddress);
- 
+
   // Update config
   const configPath = path.join(rootPath, 'motion_config.json');
   try{
@@ -229,6 +229,7 @@ app.get('/screen/brightness', (req, res) => {
   }
 });
 
+// This will set the Screen Timeout
 app.post('/screen/timeout/:minutes', (req, res) => {
   const minutes = parseInt(req.params.minutes, 10);
   if (isNaN(minutes)) return res.status(400).send('Invalid timeout value');
@@ -310,6 +311,18 @@ app.get('/screen/timeout', (req, res) => {
   */
 });
 
+// This will set the home page of the AIO Calendar
+app.post('/homescreen/:url', (req, res) =>{
+  console.error("Call to set homescreen url. Not implemented yet");
+  res.status(500).json({error: 'Not implemented'});
+});
+
+// This will retrieve the current home page of the AIO Calendar
+app.post('/homescreen', (req, res) => {
+  console.error("Call to set homescreen url. Not implemented yet");
+  res.status(500).json({error: 'Not implemented'});
+});
+
 // Set up socket.io
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
@@ -365,7 +378,7 @@ function getBrightnessPath() {
   }
 }
 
-// Check what the max brightness for this device is 
+// Check what the max brightness for this device is
 function getMaxBrightness(pathToDevice) {
   try {
     const maxPath = pathToDevice.replace('/brightness', '/max_brightness');
