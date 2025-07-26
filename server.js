@@ -10,6 +10,8 @@ const app = express();
 const rootPath = __dirname; // Get the root directory path
 const configPath = path.join(rootPath, 'motion_config.json');
 
+const kisokPath = '~/.config/autostart/Kiosk.desktop';
+
 app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
@@ -319,8 +321,16 @@ app.post('/homescreen/:url', (req, res) =>{
 
 // This will retrieve the current home page of the AIO Calendar
 app.get('/homescreen', (req, res) => {
-  console.error("Call to set homescreen url. Not implemented yet");
-  res.status(500).json({error: 'Not implemented'});
+  try {
+    // Check if the file exists
+    if (fs.existsSync(kisokPath))
+    {
+      var kioskSettings = fs.readFileSync(kisokPath);
+    }
+  } catch(exception) {
+    console.error(exception.message)
+    res.status(500).json({error: 'Could not find homescreen'});
+  }
 });
 
 // Set up socket.io

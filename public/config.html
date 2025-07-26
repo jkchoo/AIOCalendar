@@ -117,24 +117,24 @@
 		.catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	});
 
-	motionThresholdSlider.addEventListener('input', () => {
+	motionThresholdSlider.addEventListener('change', () => {
 	  document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
-	  fetch('/motion/threshold', {
+    let motionThresholdValue = parseInt(motionThresholdSlider.value);
+	  fetch('/motion/threshold/'+motionThresholdValue, {
   		method: 'POST',
-  		headers: { 'Content-Type': 'application/json' },
-  		body: JSON.stringify({ threshold: parseInt(motionThresholdSlider.value) })
+  		headers: { 'Content-Type': 'application/json' }
 	  })
 	  .then(res => res.text())
 	  .then(data => showMessage(data, 'success'))
 	  .catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	});
 
-	screenBrightnessSlider.addEventListener('input', () => {
+	screenBrightnessSlider.addEventListener('change', () => {
 	  document.getElementById('screenBrightnessValue').textContent = screenBrightnessSlider.value;
-    fetch('/screen/brightness/', {
+    let brightnessValue = parseInt(screenBrightnessSlider.value)
+    fetch('/screen/brightness/'+brightnessValue, {
       method: 'POST',
-  		headers: { 'Content-Type': 'application/json' },
-  		body: JSON.stringify({ brightness: parseInt(screenBrightnessSlider.value) })
+  		headers: { 'Content-Type': 'application/json' }
     })
 	  .then(res => res.text())
 	  .then(data => showMessage(data, 'success'))
