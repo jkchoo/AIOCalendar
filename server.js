@@ -353,6 +353,10 @@ app.get('/homescreen', (req, res) => {
         res.status(200).json({url: homescreenURL});
       }
     }
+    else
+    {
+      throw new Error("Kiosk file isn't found");
+    }
   } catch(exception) {
     console.error(exception.message)
     res.status(500).json({error: 'Could not find homescreen'});
