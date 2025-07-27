@@ -11,7 +11,7 @@ const app = express();
 const rootPath = __dirname; // Get the root directory path
 const configPath = path.join(rootPath, 'motion_config.json');
 
-const homePath = fs.readFileSync('home_file.conf', 'utf-8').split('\n')[0];
+const homePath = fs.readFileSync(path.join(rootPath,'home_file.conf'), 'utf-8').split('\n')[0];
 const kisokPath = path.join(homePath,'Kiosk.desktop');
 const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
 
