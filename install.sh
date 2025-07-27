@@ -8,7 +8,7 @@ sudo apt install python3.12 python3-pip python3.12-dev -y;
 sudo apt install python3-dev libxml2-dev libxslt-dev -y;
 sudo apt install python3-setuptools -y;
 sudo apt install python-all-dev -y;
-sudo easy_install3 pip -y; 
+sudo easy_install3 pip -y;
 sudo pip3 install opencv-python -y;
 sudo pip3 install numpy -y;
 sudo pip3 install pyautogui -y;
@@ -77,4 +77,6 @@ sudo systemctl status "$SERVICE_NAME" --no-pager
 
 
 # Setup the start page
-cp Kiosk.desktop ~/.config/autostart/
+cp Kiosk.desktop /home/$USER_NAME/.config/autostart/;
+
+echo "/home/$USER_NAME/.config/autostart" > home_file.conf;

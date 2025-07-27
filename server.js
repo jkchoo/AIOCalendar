@@ -2,8 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { exec } = require('child_process');
 const path = require('path');
-const fs = require('fs');
-const os = require('os');
+const fs = require('fs');\
 const lr = require('line-reader');
 
 const app = express();
@@ -12,8 +11,8 @@ const app = express();
 const rootPath = __dirname; // Get the root directory path
 const configPath = path.join(rootPath, 'motion_config.json');
 
-const homePath = os.homedir();
-const kisokPath = path.join(homePath,'.config/autostart/Kiosk.desktop');
+const homePath = fs.readFileSync('home_file.conf', 'utf-8').split('\n')[0];
+const kisokPath = path.join(homePath,'Kiosk.desktop');
 const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
 
 app.use(express.static(path.join(rootPath, 'public')));
@@ -334,7 +333,7 @@ app.get('/homescreen', (req, res) => {
       lr.open(kisokPath, function(reader) {
         if (reader.hasNextLine()) {
           reader.nextLine(function(line) {
-            if(line.search(kioskConfig) != -1) 
+            if(line.search(kioskConfig) != -1)
             {
               let values = line.split(' ');
               homescreenURL = values[values.length-1];
@@ -346,7 +345,7 @@ app.get('/homescreen', (req, res) => {
       {
         throw new Error("Homescreen URL is blank");
       }
-      else 
+      else
       {
         // Assume that we have the correct value now
         console.log(homescreenURL);
