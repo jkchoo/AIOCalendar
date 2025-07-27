@@ -74,3 +74,7 @@ sudo systemctl start "$SERVICE_NAME"
 # Show status
 echo "Service status:"
 sudo systemctl status "$SERVICE_NAME" --no-pager
+
+
+# Setup the start page
+cp Kiosk.desktop ~/.config/autostart/
