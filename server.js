@@ -330,12 +330,14 @@ app.get('/homescreen', (req, res) => {
     {
       let homescreenURL = "";
       // From here need to parse out the kiosk value
+      console.info("Checking file lines")
       lr.open(kisokPath, function(reader) {
         if (reader.hasNextLine()) {
           reader.nextLine(function(line) {
+            let values = line.split(' ');
+            console.info("\t-"+values);
             if(line.search(kioskConfig) != -1)
             {
-              let values = line.split(' ');
               homescreenURL = values[values.length-1];
             }
           });
@@ -358,7 +360,12 @@ app.get('/homescreen', (req, res) => {
     }
   } catch(exception) {
     console.error(exception.message)
-    res.status(500).json({error: 'Could not find homescreen'});
+    res.status(500).json(
+      {
+        error: 'Could not find homescreen',
+        details: exception.message
+      }
+    );
   }
 });
 
