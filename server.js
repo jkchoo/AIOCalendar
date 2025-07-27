@@ -355,7 +355,7 @@ app.get('/homescreen', (req, res) => {
     }
     else
     {
-      throw new Error("Kiosk file isn't found");
+      throw new Error("Kiosk file isn't found\t" + kisokPath);
     }
   } catch(exception) {
     console.error(exception.message)
