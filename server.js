@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { exec } = require('child_process');
 const path = require('path');
-const fs = require('fs');\
+const fs = require('fs');
 const lr = require('line-reader');
 
 const app = express();
