@@ -140,6 +140,7 @@ app.post('/motion/disable', (req, res) => {
 // Set the motion threshold value
 app.post('/motion/threshold/:value', (req, res) => {
   const threshold = parseFloat(req.params.value);
+  console.info("Getting new threshold as " + threshold);
   if (isNaN(threshold)) {
       return res.status(400).send('Invalid threshold');
   }
