@@ -119,7 +119,7 @@
 
 	motionThresholdSlider.addEventListener('change', () => {
 	  document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
-    let motionThresholdValue = parseInt(motionThresholdSlider.value);
+    let motionThresholdValue = parseFloat(motionThresholdSlider.value);
 	  fetch('/motion/threshold/'+motionThresholdValue, {
   		method: 'POST',
   		headers: { 'Content-Type': 'application/json' }
@@ -222,7 +222,6 @@
 	// Initialize the Motion configurations
 	async function initMotion() {
 		try{
-
 			// Fetch current motion.py state
 			fetch('/motion/config')
 			.then(res => res.json())
