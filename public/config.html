@@ -117,7 +117,7 @@
 		.catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
 	});
 
-  motionThresholdSlider.addEventListener('mousedown', () => {
+  motionThresholdSlider.addEventListener('mousemove', () => {
 	  document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
   });
 
