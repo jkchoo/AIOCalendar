@@ -12,7 +12,7 @@ const rootPath = __dirname; // Get the root directory path
 const configPath = path.join(rootPath, 'motion_config.json');
 
 const homePath = fs.readFileSync(path.join(rootPath,'home_file.conf'), 'utf-8').split('\n')[0];
-const kisokPath = path.join(homePath,'Kiosk.desktop');
+const kioskPath = path.join(homePath,'Kiosk.desktop');
 const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
 
 app.use(express.static(path.join(rootPath, 'public')));
@@ -326,7 +326,7 @@ app.post('/homescreen/:url', (req, res) =>{
 app.get('/homescreen', (req, res) => {
   try {
     // Check if the file exists
-    if (fs.existsSync(kisokPath))
+    if (fs.existsSync(kioskPath))
     {
       let homescreenURL = "";
       // From here need to parse out the kiosk value
@@ -345,7 +345,7 @@ app.get('/homescreen', (req, res) => {
               homescreenURL = values[values.length-1];
             }
       }
-      // Make sure we got something 
+      // Make sure we got something
       if(homescreenURL == "")
       {
         throw new Error("Homescreen URL is blank");
@@ -359,7 +359,7 @@ app.get('/homescreen', (req, res) => {
     }
     else
     {
-      throw new Error("Kiosk file isn't found\t" + kisokPath);
+      throw new Error("Kiosk file isn't found\t" + kioskPath);
     }
   } catch(exception) {
     console.error(exception.message)
