@@ -269,6 +269,7 @@
     try {
       //Fetch the current homescreen url
       fetch('/homescreen')
+			.then(res => res.json())
       .then(data => {
         inputHomePageURL.value = data.url
       })
