@@ -319,8 +319,54 @@ app.get('/screen/timeout', (req, res) => {
 
 // This will set the home page of the AIO Calendar
 app.post('/homescreen/:url', (req, res) =>{
-  console.error("Call to set homescreen url. Not implemented yet");
-  res.status(500).json({error: 'Not implemented'});
+  try {
+    let url = req.params.url;
+    // Check if the file exists
+    if (fs.existsSync(kioskPath))
+    {
+      let homescreenURL = "";
+      // From here need to parse out the kiosk value
+      console.info("Checking file lines")
+      let file = fs.readFileSync(kioskPath, 'utf-8');
+      let lines = file.split('\n');
+      // Loop through the lines
+      for(let i=0; i<lines.length; i++)
+      {
+            let line = lines[i];
+            console.info("\t-"+line);
+            // Check if it has the value we want
+            if(line.search(kioskConfig) != -1)
+            {
+              let values = line.split(' ');
+              values[values.length-1] = url;
+              line = values.join(' ');
+            }
+      }
+      // Make sure we got something
+      if(homescreenURL == "")
+      {
+        throw new Error("Homescreen URL is blank");
+      }
+      else
+      {
+        file = lines.join('\n');
+        fs.writeFileSync(kioskPath, file, {flag: 'a'});
+        res.status(200);
+      }
+    }
+    else
+    {
+      throw new Error("Kiosk file isn't found\t" + kioskPath);
+    }
+  } catch(exception) {
+    console.error(exception.message)
+    res.status(500).json(
+      {
+        error: 'Could not find homescreen',
+        details: exception.message
+      }
+    );
+  }
 });
 
 // This will retrieve the current home page of the AIO Calendar

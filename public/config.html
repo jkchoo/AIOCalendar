@@ -58,7 +58,7 @@
   	  </select>
       <br />
       <label for="inputHomePageURL" class="form-label">Homescreen URL:</label>
-      <input type="text" id="inputHomePageURL">
+      <input type="text" id="inputHomePageURL"  class="form-control" placeholder="http://localhost/config.html">
       <button id="updateHomescreenURL" class="btn btn-secondary" onclick="runURLUpdate()">Update URL</button>
     </div>
   </div>
@@ -174,7 +174,14 @@
 
   // Update the HomescreenURL
   function runURLUpdate() {
-
+    // TODO: add in some sort of validation
+    fetch('/homescreen', {
+      method: 'POST',
+  		body: JSON.stringify({ url: inputHomePageURL.value })
+    })
+    .then(res => res.text())
+    .then(data => showMessage(data, 'info'))
+    .catch(err => showMessage('Update URL failed: ' + err, 'danger'));
   }
 
   // Update the website
