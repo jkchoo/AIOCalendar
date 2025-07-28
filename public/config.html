@@ -177,7 +177,7 @@
   function runURLUpdate() {
     // TODO: add in some sort of validation
     let urlValue = inputHomePageURL.value;
-    fetch('/homescreen/' + urlValue, {
+    fetch('/newhomescreen/', {
       method: 'POST',
   		body: JSON.stringify({ url: urlValue })
     })
