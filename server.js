@@ -331,18 +331,21 @@ app.get('/homescreen', (req, res) => {
       let homescreenURL = "";
       // From here need to parse out the kiosk value
       console.info("Checking file lines")
-      lr.open(kisokPath, function(reader) {
-        if (reader.hasNextLine()) {
-          reader.nextLine(function(line) {
-            let values = line.split(' ');
-            console.info("\t-"+values);
+      let file = fs.readFileSync(kioskPath, 'utf-8');
+      let lines = file.split('\n');
+      // Loop through the lines
+      for(let i=0; i<lines.length; i++)
+      {
+            let line = lines[i];
+            console.info("\t-"+line);
+            // Check if it has the value we want
             if(line.search(kioskConfig) != -1)
             {
+              let values = line.split(' ');
               homescreenURL = values[values.length-1];
             }
-          });
-        }
-      });
+      }
+      // Make sure we got something 
       if(homescreenURL == "")
       {
         throw new Error("Homescreen URL is blank");
