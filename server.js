@@ -39,7 +39,7 @@ app.post('/update', (req, res) => {
   res.status(200).send("Update started. Service will restart if update is successful.");
 
   // Begin Git pull in background
-  const gitPull = exec("git pull", { cwd: rootPath });
+  const gitPull = exec("sudo git pull", { cwd: rootPath });
 
   let gitOutput = '';
 
