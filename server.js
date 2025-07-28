@@ -48,6 +48,17 @@ app.post('/update', (req, res) => {
     gitOutput += data.toString();
   });
 
+  // This will reboot the system
+  app.post('/reboot', (req, res) => {
+    console.log("rebooting now");
+
+    // Respond immediately to the web UI
+    res.status(200).send("Rebooting now. Check back soon");
+
+    // Reboot the system
+    const rebootNow = exec("sudo reboot now");
+  });
+
   gitPull.stderr.on('data', (data) => {
     console.error("Git stderr:", data.toString());
     gitOutput += data.toString();
