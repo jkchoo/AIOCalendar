@@ -51,26 +51,6 @@ app.post('/update', (req, res) => {
     gitOutput += data.toString();
   });
 
-  // This will reboot the system
-  app.post('/reboot', (req, res) => {
-    try
-    {
-      console.log("rebooting now");
-
-      // Respond immediately to the web UI
-      res.status(200).send("Rebooting now. Check back soon");
-
-      // Reboot the system
-      const rebootNow = exec("sudo reboot now");
-    }
-    catch(err)
-    {
-      console.error(err);
-      res.status(500).send("Error rebooting: " + err);
-    }
-
-  });
-
   gitPull.stderr.on('data', (data) => {
     console.error("Git stderr:", data.toString());
     gitOutput += data.toString();
@@ -93,6 +73,26 @@ app.post('/update', (req, res) => {
       console.error("Git pull failed with code:", code);
     }
   });
+});
+
+// This will reboot the system
+app.post('/reboot', (req, res) => {
+  try
+  {
+    console.log("rebooting now");
+
+    // Respond immediately to the web UI
+    res.status(200).send("Rebooting now. Check back soon");
+
+    // Reboot the system
+    const rebootNow = exec("sudo reboot now");
+  }
+  catch(err)
+  {
+    console.error(err);
+    res.status(500).send("Error rebooting: " + err);
+  }
+
 });
 
 // Enable the motion waking up feature
