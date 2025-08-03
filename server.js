@@ -22,8 +22,7 @@ app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
 app.use((req, res, next)=> {
- console.log('I run on every request!');
- console.log("Request from " + req.socket.remoteAddress);
+  console.log("Request from " + req.socket.remoteAddress + " with URL " + req.params);
  next();
 });
 
