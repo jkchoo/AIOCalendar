@@ -4,6 +4,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const lr = require('line-reader');
+const bodyParser = require('body-parser')
 
 const app = express();
 // const upload = multer({ dest: 'temp/' });
@@ -15,6 +16,7 @@ const homePath = fs.readFileSync(path.join(rootPath,'home_file.conf'), 'utf-8').
 const kioskPath = path.join(homePath,'Kiosk.desktop');
 const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
 
+app.use(bodyParser.json() );
 app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
@@ -331,7 +333,7 @@ app.get('/screen/timeout', (req, res) => {
 // This will set the home page of the AIO Calendar
 app.post('/newhomescreen', (req, res) =>{
   try {
-    let url = req.params.url;
+    let url = req.body.url;
     // Check if the file exists
     if (fs.existsSync(kioskPath))
     {
