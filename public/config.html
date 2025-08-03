@@ -205,9 +205,10 @@
 		.then(res => res.text())
 		.then(data => showMessage(data, 'info'))
 		.then(function() {
-			setTimeout(function() {
-				window.location = window.location;
-			}, 10000)
+			//setTimeout(function() {
+			//	window.location = window.location;
+			//}, 10000);
+      console.log("Here I would redirect");
 		})
 		.catch(err => showMessage('Reboot failed: ' + err, 'danger'));
   }
