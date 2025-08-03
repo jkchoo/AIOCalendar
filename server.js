@@ -16,7 +16,8 @@ const homePath = fs.readFileSync(path.join(rootPath,'home_file.conf'), 'utf-8').
 const kioskPath = path.join(homePath,'Kiosk.desktop');
 const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
 
-app.use(bodyParser.json() );
+// We need to do this to access
+app.use(bodyParser.json());
 app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
@@ -52,13 +53,22 @@ app.post('/update', (req, res) => {
 
   // This will reboot the system
   app.post('/reboot', (req, res) => {
-    console.log("rebooting now");
+    try
+    {
+      console.log("rebooting now");
 
-    // Respond immediately to the web UI
-    res.status(200).send("Rebooting now. Check back soon");
+      // Respond immediately to the web UI
+      res.status(200).send("Rebooting now. Check back soon");
 
-    // Reboot the system
-    const rebootNow = exec("sudo reboot now");
+      // Reboot the system
+      const rebootNow = exec("sudo reboot now");
+    }
+    catch(err)
+    {
+      console.error(err);
+      res.status(500).send("Error rebooting: " + err);
+    }
+
   });
 
   gitPull.stderr.on('data', (data) => {
