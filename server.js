@@ -30,7 +30,7 @@ app.use((req, res, next)=> {
 
 // Handle GET request for '/'
 app.get('/', (req, res) => {
-  console.log("Request from " + req.socket.remoteAddress);
+  console.log("Request from " + req.socket.remoteAddress + " with URL " + req.params);
   res.sendFile(path.join(rootPath, 'public', 'index.html'));
 });
 
