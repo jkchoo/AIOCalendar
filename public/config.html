@@ -188,7 +188,7 @@
 
   // Update the website
 	function runUpdate() {
-	  fetch('/update', { method: 'POST' })
+	  fetch('/update/', { method: 'POST' })
 		.then(res => res.text())
 		.then(data => showMessage(data, 'info'))
 		.then(function() {
@@ -201,7 +201,7 @@
 
   // Reboot the system
   function reboot() {
-	  fetch('/rs', { method: 'POST' })
+	  fetch('/reboot/', { method: 'POST' })
 		.then(res => res.text())
 		.then(data => showMessage(data, 'info'))
 		.then(function() {
