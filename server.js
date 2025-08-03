@@ -22,14 +22,13 @@ app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
 app.use((req, res, next)=> {
-  console.log("Request from " + req.socket.remoteAddress + " with URL " + req.params);
+  console.log("Request from " + req.socket.remoteAddress + " with URL " + req.originalUrl);
  next();
 });
 
 
 // Handle GET request for '/'
 app.get('/', (req, res) => {
-  console.log("Request from " + req.socket.remoteAddress + " with URL " + req.params);
   res.sendFile(path.join(rootPath, 'public', 'index.html'));
 });
 
