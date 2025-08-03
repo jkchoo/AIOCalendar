@@ -52,7 +52,7 @@ app.post('/update', (req, res) => {
   });
 
   // This will reboot the system
-  app.post('/reboot', (req, res) => {
+  app.post('/rs', (req, res) => {
     try
     {
       console.log("rebooting now");

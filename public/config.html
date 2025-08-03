@@ -201,7 +201,7 @@
 
   // Reboot the system
   function reboot() {
-	  fetch('/reboot', { method: 'POST' })
+	  fetch('/rs', { method: 'POST' })
 		.then(res => res.text())
 		.then(data => showMessage(data, 'info'))
 		.then(function() {
