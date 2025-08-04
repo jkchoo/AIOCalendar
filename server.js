@@ -4,7 +4,6 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const lr = require('line-reader');
-const bodyParser = require('body-parser')
 
 const app = express();
 // const upload = multer({ dest: 'temp/' });
@@ -17,7 +16,7 @@ const kioskPath = path.join(homePath,'Kiosk.desktop');
 const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
 
 // We need to do this to access
-app.use(bodyParser.json());
+app.use(express.json()); // <==== parse request body as JSON
 app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
@@ -341,11 +340,6 @@ app.get('/screen/timeout', (req, res) => {
 // This will set the home page of the AIO Calendar
 app.post('/newhomescreen', (req, res) =>{
   try {
-    for (var key in req) {
-        if (req.hasOwnProperty(key)) {
-            console.log(key + " -> " + req[key]);
-        }
-    }
     let url = req.body.url;
     // Check if the file exists
     if (fs.existsSync(kioskPath))
@@ -382,13 +376,13 @@ app.post('/newhomescreen', (req, res) =>{
     }
     else
     {
-      throw new Error("Kiosk file isn't found\t" + kioskPath);
+      throw new Error("Kiosk can't be updated \t" + kioskPath);
     }
   } catch(exception) {
     console.error(exception.message)
     res.status(500).json(
       {
-        error: 'Could not find homescreen',
+        error: 'Could not update homescreen',
         details: exception.message
       }
     );
