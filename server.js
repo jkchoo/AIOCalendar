@@ -358,15 +358,17 @@ app.post('/newhomescreen', (req, res) =>{
             // Check if it has the value we want
             if(line.search(kioskConfig) != -1)
             {
-              console.log("Found the line we want to replace");
+              //console.log("Found the line we want to replace");
               let values = line.split(' ');
               values[values.length-1] = url;
               line = values.join(' ');
-              console.log("New URL config is:\t" + line);
+              //console.log("New URL config is:\t" + line);
+              // Update with the new URL
+              lines[i] = line;
             }
       }
       // Make sure we got something
-      if(homescreenURL == "")
+      if(url == "")
       {
         throw new Error("Homescreen URL is blank");
       }
