@@ -341,6 +341,7 @@ app.get('/screen/timeout', (req, res) => {
 app.post('/newhomescreen', (req, res) =>{
   try {
     let url = req.body.url;
+    console.log("New URL is " + url);
     // Check if the file exists
     if (fs.existsSync(kioskPath))
     {
@@ -357,9 +358,11 @@ app.post('/newhomescreen', (req, res) =>{
             // Check if it has the value we want
             if(line.search(kioskConfig) != -1)
             {
+              console.log("Found the line we want to replace");
               let values = line.split(' ');
               values[values.length-1] = url;
               line = values.join(' ');
+              console.log("New URL config is:\t" + line);
             }
       }
       // Make sure we got something
