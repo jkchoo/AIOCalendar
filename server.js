@@ -341,7 +341,11 @@ app.get('/screen/timeout', (req, res) => {
 // This will set the home page of the AIO Calendar
 app.post('/newhomescreen', (req, res) =>{
   try {
-    console.log("Request is " + JSON.stringify(req));
+    for (var key in req) {
+        if (req.hasOwnProperty(key)) {
+            console.log(key + " -> " + req[key]);
+        }
+    }
     let url = req.body.url;
     // Check if the file exists
     if (fs.existsSync(kioskPath))
