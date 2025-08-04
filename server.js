@@ -347,14 +347,14 @@ app.post('/newhomescreen', (req, res) =>{
     {
       let homescreenURL = "";
       // From here need to parse out the kiosk value
-      console.info("Checking file lines")
+      //console.info("Checking file lines")
       let file = fs.readFileSync(kioskPath, 'utf-8');
       let lines = file.split('\n');
       // Loop through the lines
       for(let i=0; i<lines.length; i++)
       {
             let line = lines[i];
-            console.info("\t-"+line);
+            //console.info("\t-"+line);
             // Check if it has the value we want
             if(line.search(kioskConfig) != -1)
             {
