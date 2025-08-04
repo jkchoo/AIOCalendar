@@ -179,6 +179,7 @@
     let urlValue = inputHomePageURL.value;
     fetch('/newhomescreen/', {
       method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
   		body: JSON.stringify({ url: urlValue })
     })
     .then(res => res.text())
