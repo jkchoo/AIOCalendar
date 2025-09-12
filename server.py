@@ -3,6 +3,7 @@ import json
 import subprocess
 from flask import Flask, request, jsonify, send_from_directory
 from flask_socketio import SocketIO
+import sys
 import logging
 
 logging.basicConfig(
