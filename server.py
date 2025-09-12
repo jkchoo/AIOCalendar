@@ -63,7 +63,7 @@ def run_command(cmd, cwd=None):
 # ---------- Middleware ----------
 @app.before_request
 def log_request():
-    print(f"Request from {request.remote_addr} with URL {request.path}", flush=True))
+    print(f"Request from {request.remote_addr} with URL {request.path}", flush=True)
 
 
 # ---------- Routes ----------
