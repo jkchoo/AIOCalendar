@@ -238,7 +238,7 @@ def get_timeout():
         return jsonify({"error": "Failed to parse timeout"}), 500
 
 
-@app.route("/newhomescreen", methods=["POST"])
+@app.route("/newhomescreen", methods=["POST"], strict_slashes=False)
 def new_homescreen():
     try:
         data = request.get_json()
