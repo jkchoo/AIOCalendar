@@ -10,6 +10,7 @@ socketio = SocketIO(app)
 # Paths
 root_path = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(root_path, "motion_config.json")
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 with open(os.path.join(root_path, "home_file.conf"), "r") as f:
     home_path = f.readline().strip()
