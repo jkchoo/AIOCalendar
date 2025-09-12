@@ -3,8 +3,16 @@ import json
 import subprocess
 from flask import Flask, request, jsonify, send_from_directory
 from flask_socketio import SocketIO
+import logging
+
+logging.basicConfig(
+    stream=sys.stdout,
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+);
 
 app = Flask(__name__, static_folder="public")
+app.logger.setLevel(logging.DEBUG)
 socketio = SocketIO(app)
 
 # Paths
@@ -28,7 +36,7 @@ def get_brightness_path():
             return None
         return os.path.join(base_path, entries[0], "brightness")
     except Exception as e:
-        print("Unable to locate brightness control:", str(e))
+        print(f"Unable to locate brightness control: {e}", flush=True))
         return None
 
 
@@ -38,7 +46,7 @@ def get_max_brightness(path_to_device):
         with open(max_path, "r") as f:
             return int(f.read().strip())
     except Exception:
-        print("Could not read max_brightness")
+        print("Could not read max_brightness", flush=True)
         return None
 
 
@@ -55,7 +63,7 @@ def run_command(cmd, cwd=None):
 # ---------- Middleware ----------
 @app.before_request
 def log_request():
-    print(f"Request from {request.remote_addr} with URL {request.path}")
+    print(f"Request from {request.remote_addr} with URL {request.path}", flush=True))
 
 
 # ---------- Routes ----------
@@ -69,35 +77,35 @@ def serve_static(filename):
 
 @app.route("/update", methods=["POST"], strict_slashes=False)
 def update():
-    print("Starting update from Git...")
+    print("Starting update from Git...", flush=True)
     socketio.start_background_task(target=do_update)
     return "Update started. Service will restart if update is successful.", 200
 
 
 def do_update():
     code, out, err = run_command("sudo git pull", cwd=root_path)
-    print("Git output:", out, err)
+    print(f"Git output: {out}, {err}", flush=True)
     if code == 0:
-        print("Git pull complete. Restarting webui.service...")
+        print("Git pull complete. Restarting webui.service...", flush=True)
         run_command("sudo systemctl restart webui.service")
     else:
-        print("Git pull failed.")
+        print("Git pull failed.", flush=True)
 
 
 @app.route("/reboot", methods=["POST"], strict_slashes=False)
 def reboot():
     try:
-        print("Rebooting now")
+        print("Rebooting now", flush=True)
         subprocess.Popen("sudo reboot now", shell=True)
         return "Rebooting now. Check back soon", 200
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error: {e}", flush=True)
         return f"Error rebooting: {e}", 500
 
 
 @app.route("/motion/enable", methods=["POST"], strict_slashes=False)
 def motion_enable():
-    print(f"Enabling motion.py from {request.remote_addr}")
+    print(f"Enabling motion.py from {request.remote_addr}", flush=True)
     try:
         config = {}
         if os.path.exists(config_path):
@@ -107,12 +115,12 @@ def motion_enable():
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
     except Exception as e:
-        print("Error writing motion config:", str(e))
+        print(f"Error writing motion config: {e}", flush=True)
         return "Failed to update config", 500
 
     code, _, err = run_command("python3 /path/to/motion.py &")
     if code != 0:
-        print("Failed to start motion.py:", err)
+        print(f"Failed to start motion.py: {err}", flush=True)
         return "Failed to start motion.py", 500
 
     return "motion.py started", 200
@@ -120,7 +128,7 @@ def motion_enable():
 
 @app.route("/motion/disable", methods=["POST"], strict_slashes=False)
 def motion_disable():
-    print(f"Disabling motion.py from {request.remote_addr}")
+    print(f"Disabling motion.py from {request.remote_addr}", flush=True)
     try:
         config = {}
         if os.path.exists(config_path):
@@ -130,12 +138,12 @@ def motion_disable():
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
     except Exception as e:
-        print("Error writing motion config:", str(e))
+        print(f"Error writing motion config: {e}", flush=True)
         return "Failed to update config", 500
 
     code, _, err = run_command("pkill -f motion.py")
     if code != 0:
-        print("Failed to stop motion.py:", err)
+        print(f"Failed to stop motion.py: {err}", flush=True)
         return "Failed to stop motion.py", 500
 
     return "motion.py stopped", 200
@@ -156,10 +164,10 @@ def motion_threshold(value):
         config["threshold"] = threshold
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
-        print("Updated motion threshold to", threshold)
+        print(f"Updated motion threshold to {threshold}", flush=True)
         return "Threshold updated", 200
     except Exception as e:
-        print("Error writing threshold:", str(e))
+        print(f"Error writing threshold: {e}", flush=True)
         return "Failed to update threshold", 500
 
 
@@ -189,10 +197,10 @@ def screen_brightness(value):
 
     code, _, err = run_command(f"echo {value} | sudo tee {brightness_path}")
     if code != 0:
-        print("Failed to set brightness:", err)
+        print(f"Failed to set brightness:{err}", flush=True)
         return "Failed to set brightness", 500
 
-    print(f"Brightness set to {value}")
+    print(f"Brightness set to {value}", flush=True)
     return "Brightness updated", 200
 
 
@@ -211,7 +219,7 @@ def get_brightness():
             current = int(f.read().strip())
         return jsonify({"current": current, "max": max_brightness})
     except Exception as e:
-        print("Error reading current brightness:", str(e))
+        print(f"Error reading current brightness: {e}", flush=True)
         return jsonify({"error": "Unable to read current brightness"}), 500
 
 
@@ -288,17 +296,17 @@ def homescreen():
 # ---------- Socket.IO ----------
 @socketio.on("connect")
 def handle_connect():
-    print("Client connected")
+    print("Client connected", flush=True)
 
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    print("Client disconnected")
+    print("Client disconnected", flush=True)
 
 
 @socketio.on("join")
 def handle_join(room):
-    print(f"Client joined room: {room}")
+    print(f"Client joined room: {room}", flush=True)
     # flask_socketio join_room(room) if needed
 
 
@@ -309,7 +317,7 @@ if __name__ == "__main__":
         with open(config_path, "r") as f:
             config = json.load(f)
         if config.get("enabled"):
-            print("motion.py is enabled in config. Starting...")
+            print("motion.py is enabled in config. Starting...", flush=True)
             run_command("python3 /path/to/motion.py &")
 
     socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
