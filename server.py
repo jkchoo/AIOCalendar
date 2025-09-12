@@ -308,4 +308,4 @@ if __name__ == "__main__":
             print("motion.py is enabled in config. Starting...")
             run_command("python3 /path/to/motion.py &")
 
-    socketio.run(app, host="0.0.0.0", port=80)
+    socketio.run(app, host="0.0.0.0", port=80, allow_unsafe_werkzeug=True)
