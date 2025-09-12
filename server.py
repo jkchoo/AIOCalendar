@@ -60,8 +60,11 @@ def log_request():
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return send_from_directory(os.path.join(root_path, "public"), "index.html")
+    return send_from_directory(os.path.join(root_path, "static"), "index.html")
 
+@app.route("/<path:filename>")
+def serve_static(filename):
+    return send_from_directory(STATIC_DIR, filename)
 
 @app.route("/update", methods=["POST"])
 def update():
@@ -308,4 +311,4 @@ if __name__ == "__main__":
             print("motion.py is enabled in config. Starting...")
             run_command("python3 /path/to/motion.py &")
 
-    socketio.run(app, host="0.0.0.0", port=80, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
