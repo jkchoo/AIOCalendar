@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk www.google.com
+X-GNOME-Autostart-enabled=true
+NoDisplay=false
+Hidden=false
+Name[en_US]=Kiosk
+Comment[en_US]=Kiosk
+X-GNOME-Autostart-Delay=10

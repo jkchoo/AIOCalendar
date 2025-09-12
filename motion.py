@@ -1,27 +1,27 @@
 # import the necessary packages
-import cv2
-import gradio as gr
-import numpy as np
-import time
-from datetime import datetime
-import pyautogui
+import cv2;
+import gradio as gr;
+import numpy as np;
+import time;
+from datetime import datetime;
+import pyautogui;
 #import matplotlib.pyplot as plt
 
 # Log file location
-global logLoc = '~/motion/motion.log'
-global valLoc = "~/motion/values.log"
+logLoc = '~/motion/motion.log';
+valLoc = "~/motion/values.log";
 
 # How often I want to see the averageDifference
-global avgDiffCounter = 0
+avgDiffCounter = 0;
 # This is the limit in seconds(ish) Need to figure this timing out
-global avgDiffLimit = 10 * 60
+avgDiffLimit = 10 * 60;
 
-global cameraResolution = {
+cameraResolution = {
     'width' : 160,
     'height' : 120
 }
 
-global fontToUse = {
+fontToUse = {
     'face': cv2.FONT_HERSHEY_PLAIN,
     'scale': 2,
     'color': (255,255,255),
@@ -32,9 +32,10 @@ global fontToUse = {
 def detectMotion():
     # Open the camera stream
     try:
-        cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, cameraResolution['width'])
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cameraResolution['height'])
+        global cameraResolution;
+        cap = cv2.VideoCapture(0);
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, cameraResolution['width']);
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cameraResolution['height']);
 
         # Get the FPS
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -75,7 +76,9 @@ def detectMotion():
 
         if diff > threshold:
             #print(f"Motion detected value {diff} at {now}")
-            pyautogui.press('shift')
+            pyautogui.press('shift');
+            global logLoc;
+            global fontToUse;
             with open(logLoc, 'a') as file:
               file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
             curr = now.strftime("%y-%m-%d %H-%M-%S")
@@ -96,12 +99,15 @@ def detectMotion():
 
         if frameCounter == fps:
             frameCounter = 0
-            avgDiffCounter += 1
+            global avgDiffCounter;
+            global avgDiffLimit;
+            avgDiffCounter += 1;
             if avgDiffCounter == avgDiffLimit:
                 avgDiffCounter = 0
                 averageChange = np.mean(rollingAverage)
                 # Clear out the rolling average
-                rollingAverage = []
+                rollingAverage = [];
+                global valLoc;
                 with open(valLoc, 'a') as file:
                     file.write(f"Average difference at {now} is {averageChange}\n")
             #print(f"{frameCounter} {avgDiffCounter}")

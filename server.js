@@ -3,6 +3,7 @@ const multer = require('multer');
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const lr = require('line-reader');
 
 const app = express();
 // const upload = multer({ dest: 'temp/' });
@@ -10,19 +11,23 @@ const app = express();
 const rootPath = __dirname; // Get the root directory path
 const configPath = path.join(rootPath, 'motion_config.json');
 
+const homePath = fs.readFileSync(path.join(rootPath,'home_file.conf'), 'utf-8').split('\n')[0];
+const kioskPath = path.join(homePath,'Kiosk.desktop');
+const kioskConfig = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
+
+// We need to do this to access
+app.use(express.json()); // <==== parse request body as JSON
 app.use(express.static(path.join(rootPath, 'public')));
 
 //Log all of the requests to this service
 app.use((req, res, next)=> {
- console.log('I run on every request!');
- console.log("Request from " + req.socket.remoteAddress);
+  console.log("Request from " + req.socket.remoteAddress + " with URL " + req.originalUrl);
  next();
 });
 
 
 // Handle GET request for '/'
 app.get('/', (req, res) => {
-  console.log("Request from " + req.socket.remoteAddress);
   res.sendFile(path.join(rootPath, 'public', 'index.html'));
 });
 
@@ -30,39 +35,61 @@ app.get('/', (req, res) => {
 app.post('/update', (req, res) => {
   console.log("Starting update from Git...");
 
-  const gitPull = exec("git pull", { cwd: rootPath });
+  // Respond immediately to the web UI
+  res.status(200).send("Update started. Service will restart if update is successful.");
+
+  // Begin Git pull in background
+  const gitPull = exec("sudo git pull", { cwd: rootPath });
 
   let gitOutput = '';
 
   gitPull.stdout.on('data', (data) => {
-      console.log("Git stdout:", data.toString());
-      gitOutput += data.toString();
+    console.log("Git stdout:", data.toString());
+    gitOutput += data.toString();
   });
 
   gitPull.stderr.on('data', (data) => {
-      console.error("Git stderr:", data.toString());
-      gitOutput += data.toString();
+    console.error("Git stderr:", data.toString());
+    gitOutput += data.toString();
   });
 
   gitPull.on('exit', (code) => {
-      if (code === 0) {
-          console.log("Git pull complete. Restarting webui.service...");
-          const restartService = exec("sudo systemctl restart webui.service");
+    if (code === 0) {
+      console.log("Git pull complete. Restarting webui.service...");
+      const restartService = exec("sudo systemctl restart webui.service");
 
-          restartService.on('exit', (restartCode) => {
-              if (restartCode === 0) {
-                  console.log("Service restarted successfully.");
-                  res.status(200).send("Update completed and service restarted.");
-              } else {
-                  console.error("Failed to restart service.");
-                  res.status(500).send("Update pulled, but failed to restart service.");
-              }
-          });
-      } else {
-          console.error("Git pull failed.");
-          res.status(500).send("Failed to update from Git.");
-      }
+      restartService.on('exit', (restartCode) => {
+        if (restartCode === 0) {
+          console.log("Service restarted successfully.");
+        } else {
+          console.error("Failed to restart service.");
+        }
+      });
+
+    } else {
+      console.error("Git pull failed with code:", code);
+    }
   });
+});
+
+// This will reboot the system
+app.post('/reboot', (req, res) => {
+  try
+  {
+    console.log("rebooting now");
+
+    // Respond immediately to the web UI
+    res.status(200).send("Rebooting now. Check back soon");
+
+    // Reboot the system
+    const rebootNow = exec("sudo reboot now");
+  }
+  catch(err)
+  {
+    console.error(err);
+    res.status(500).send("Error rebooting: " + err);
+  }
+
 });
 
 // Enable the motion waking up feature
@@ -88,7 +115,7 @@ app.post('/motion/enable', (req, res) => {
       if (error) {
           console.error("Failed to start motion.py:", error.message);
           return res.status(500).send("Failed to start motion.py");
-      }      
+      }
 
       // Then we're good
       console.log("motion.py started and config updated");
@@ -99,7 +126,7 @@ app.post('/motion/enable', (req, res) => {
 // Disable the motion waking up
 app.post('/motion/disable', (req, res) => {
   console.log("Disabling motion.py from " + req.socket.remoteAddress);
- 
+
   // Update config
   const configPath = path.join(rootPath, 'motion_config.json');
   try{
@@ -132,7 +159,8 @@ app.post('/motion/disable', (req, res) => {
 
 // Set the motion threshold value
 app.post('/motion/threshold/:value', (req, res) => {
-  const threshold = parseInt(req.params.value, 10);
+  const threshold = parseFloat(req.params.value);
+  console.info("Getting new threshold as " + threshold);
   if (isNaN(threshold)) {
       return res.status(400).send('Invalid threshold');
   }
@@ -164,8 +192,8 @@ app.get('/motion/config', (req, res) => {
 
     const configData = JSON.parse(fs.readFileSync(configPath));
     const response = {
-      enabled: configData.enabled ?? false,
-      threshold: configData.threshold ?? null
+      enabled: configData.enabled,
+      threshold: configData.threshold
     };
 
     res.json(response);
@@ -227,81 +255,198 @@ app.get('/screen/brightness', (req, res) => {
   }
 });
 
-// This will change how long the scree will wait before going black
+// This will set the Screen Timeout
 app.post('/screen/timeout/:minutes', (req, res) => {
-  const seconds = parseInt(req.params.minutes, 10)*60;
-  if (isNaN(seconds)) return res.status(400).send('Invalid timeout value');
+  const minutes = parseInt(req.params.minutes, 10);
+  if (isNaN(minutes)) return res.status(400).send('Invalid timeout value');
 
-  const command = `xset dpms ${seconds} ${seconds} ${seconds}`;
-  exec(command, (error, stdout, stderr) => {
+  const seconds = minutes * 60;
+
+  // Check if we're in GNOME environment
+  /*
+  exec('echo $XDG_CURRENT_DESKTOP', (err, stdout) => {
+    const isGnome = stdout.toLowerCase().includes('gnome');
+
+    if (isGnome) {
+  */
+    const gsettingsCmd = `gsettings set org.gnome.desktop.session idle-delay ${seconds}`;
+    console.log("Trying to set the screen timeout\n\t" + gsettingsCmd);
+    exec(gsettingsCmd, (error, stdout, stderr) => {
       if (error) {
-          console.error("Timeout error:", error.message);
-          return res.status(500).send("Failed to set screen timeout");
+        console.error("GNOME timeout error:", error.message);
+        return res.status(500).send("Failed to set screen timeout in GNOME");
       }
-      console.log("Screen timeout set to", minutes, "minutes");
-      res.send("Screen timeout updated");
-  });
+      console.log("GNOME screen timeout set to", minutes, "minutes");
+      res.send("GNOME screen timeout updated");
+    });
+    /*
+    } else {
+      const xsetCmd = `xset dpms ${seconds} ${seconds} ${seconds}`;
+      exec(xsetCmd, (error, stdout, stderr) => {
+        if (error) {
+          console.error("X11 timeout error:", error.message);
+          return res.status(500).send("Failed to set screen timeout with xset");
+        }
+        console.log("X11 screen timeout set to", minutes, "minutes");
+        res.send("X11 screen timeout updated");
+      });
+    } */
+   //});
 });
 
-app.post('/combine/:folderName', (req, res) => {
-  console.log("Request from " + req.socket.remoteAddress);
-  const folderName = req.params.folderName;
-  //console.log("Received combination mode " + combineMode);
+// This fetches the currently set Screen Timeout
+app.get('/screen/timeout', (req, res) => {
+  /*
+  exec('echo $XDG_CURRENT_DESKTOP', (err, stdout) => {
+    const isGnome = stdout.toLowerCase().includes('gnome');
 
-  var command = `./combine_images ${tempDirPath} ${outputPath}  ${combineMode}`;
-  if (combineMode == "S") {
-  	command = command + " 20";
-  }
-  console.log(command);
-  // Execute the command and capture the output
-  const childProcess = exec(command, { cwd: rootPath }); // Set the current working directory for the child process
+    if (isGnome) {
+  */
+    exec("gsettings get org.gnome.desktop.session idle-delay", (error, stdout, stderr) => {
+      if (error) {
+        console.error("GNOME read timeout error:", error.message);
+        return res.status(500).json({ error: "Failed to read GNOME screen timeout" });
+      }
 
-  // Send the output to the client via socket.io
-  const roomName = folderName; // Use the folderName as the roomName
-  childProcess.stdout.on('data', (data) => {
-    console.log(roomName + " process output " + data.toString());
-    io.to(roomName).emit('output', data.toString()); // Emit the output to the specific room
-  });
-
-  childProcess.stderr.on('data', (data) => {
-    console.log(roomName + " experienced error output " + data.toString());
-    io.to(roomName).emit('output', data.toString()); // Emit the error to the specific room
-  });
-
-  childProcess.on('exit', (code) => {
-    console.log('combine_images process exited with code', code);
-    if (code === 0) {
-      console.log('Image combination completed');
-      res.download(outputPath, 'combined_image.jpg', (err) => {
-        if (err) {
-          console.error('Download error:', err);
-        }
-        fs.readdirSync(tempDirPath).forEach((file) => {
-          const filePath = path.join(tempDirPath, file);
-          if (fs.lstatSync(filePath).isDirectory()) {
-            fs.rmdirSync(filePath, { recursive: true });
-          } else {
-            fs.unlinkSync(filePath);
-          }
-        });
-        // Remove the temporary directory
-        fs.rmdirSync(tempDirPath, { recursive: true, force: true });
-        // Remove the output file if desired
-        // fs.unlinkSync(outputPath);
-      });
+      const seconds = parseInt(stdout.trim().split(' ')[1], 10);
+      const minutes = Math.floor(seconds / 60);
+      console.log("GNOME Screen timeout is " + minutes);
+      res.json({ timeout: minutes });
+    });
+    /*
     } else {
-      console.error('combine_images process encountered an error');
-      res.sendStatus(500);
+      exec('xset q', (err, stdout) => {
+        if (err) {
+          console.error('X11 error reading xset:', err.message);
+          return res.status(500).json({ error: 'Failed to read timeout with xset' });
+        }
+
+        const match = stdout.match(/Standby:\s+(\d+)/);
+        const seconds = match ? parseInt(match[1]) : null;
+
+        if (seconds !== null) {
+          const minutes = Math.floor(seconds / 60);
+          console.log("X11 Screen timeout is " + minutes);
+          res.json({ timeout: minutes });
+        } else {
+          res.status(500).json({ error: 'Could not parse timeout from xset' });
+        }
+      });
     }
   });
+  */
+});
+
+// This will set the home page of the AIO Calendar
+app.post('/newhomescreen', (req, res) =>{
+  try {
+    let url = req.body.url;
+    console.log("New URL is " + url);
+    // Check if the file exists
+    if (fs.existsSync(kioskPath))
+    {
+      let homescreenURL = "";
+      // From here need to parse out the kiosk value
+      //console.info("Checking file lines")
+      let file = fs.readFileSync(kioskPath, 'utf-8');
+      let lines = file.split('\n');
+      // Loop through the lines
+      for(let i=0; i<lines.length; i++)
+      {
+            let line = lines[i];
+            //console.info("\t-"+line);
+            // Check if it has the value we want
+            if(line.search(kioskConfig) != -1)
+            {
+              //console.log("Found the line we want to replace");
+              let values = line.split(' ');
+              values[values.length-1] = url;
+              line = values.join(' ');
+              //console.log("New URL config is:\t" + line);
+              // Update with the new URL
+              lines[i] = line;
+            }
+      }
+      // Make sure we got something
+      if(url == "")
+      {
+        throw new Error("Homescreen URL is blank");
+      }
+      else
+      {
+        file = lines.join('\n');
+        fs.writeFileSync(kioskPath, file, {flag: 'a'});
+        res.status(200);
+      }
+    }
+    else
+    {
+      throw new Error("Kiosk can't be updated \t" + kioskPath);
+    }
+  } catch(exception) {
+    console.error(exception.message)
+    res.status(500).json(
+      {
+        error: 'Could not update homescreen',
+        details: exception.message
+      }
+    );
+  }
+});
+
+// This will retrieve the current home page of the AIO Calendar
+app.get('/homescreen', (req, res) => {
+  try {
+    // Check if the file exists
+    if (fs.existsSync(kioskPath))
+    {
+      let homescreenURL = "";
+      // From here need to parse out the kiosk value
+      console.info("Checking file lines")
+      let file = fs.readFileSync(kioskPath, 'utf-8');
+      let lines = file.split('\n');
+      // Loop through the lines
+      for(let i=0; i<lines.length; i++)
+      {
+            let line = lines[i];
+            console.info("\t-"+line);
+            // Check if it has the value we want
+            if(line.search(kioskConfig) != -1)
+            {
+              let values = line.split(' ');
+              homescreenURL = values[values.length-1];
+            }
+      }
+      // Make sure we got something
+      if(homescreenURL == "")
+      {
+        throw new Error("Homescreen URL is blank");
+      }
+      else
+      {
+        // Assume that we have the correct value now
+        console.log(homescreenURL);
+        res.status(200).json({url: homescreenURL});
+      }
+    }
+    else
+    {
+      throw new Error("Kiosk file isn't found\t" + kioskPath);
+    }
+  } catch(exception) {
+    console.error(exception.message)
+    res.status(500).json(
+      {
+        error: 'Could not find homescreen',
+        details: exception.message
+      }
+    );
+  }
 });
 
 // Set up socket.io
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-
-
-
 
 // Socket.io connection event
 io.on('connection', (socket) => {
@@ -354,7 +499,7 @@ function getBrightnessPath() {
   }
 }
 
-// Check what the max brightness for this device is 
+// Check what the max brightness for this device is
 function getMaxBrightness(pathToDevice) {
   try {
     const maxPath = pathToDevice.replace('/brightness', '/max_brightness');

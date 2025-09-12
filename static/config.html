@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Device Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+
+  <h1 class="mb-4">Device Control Panel</h1>
+
+  <!-- Alert Message -->
+  <div id="messageArea" class="alert d-none" role="alert"></div>
+
+  <div class="card mb-4">
+    <div class="card-header">Motion Control</div>
+    <div class="card-body">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="motionToggle">
+        <label class="form-check-label" for="motionToggle">Enable motion detection screen wakeup?</label>
+      </div>
+
+      <label for="motionThresholdSlider" class="form-label mt-3">Motion sensetivity: <span id="motionThresholdValue"></span></label>
+      <input type="range" class="form-range" id="motionThresholdSlider" min=".5" max="15" step=".5">
+  	  <div class="d-flex justify-content-between">
+  		<span>High</span>
+  		<span>Low</span>
+  	  </div>
+  	</div>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">Screen Settings</div>
+    <div class="card-body">
+      <label for="screenBrightnessSlider" class="form-label">Brightness: <span id="screenBrightnessValue"></span></label>
+      <input type="range" class="form-range" id="screenBrightnessSlider" min="0" max="255">
+  	  <br />
+  	  <label for="screenTimeoutSelect" class="form-label">Screen Timeout</label>
+  	  <select id="screenTimeoutSelect" class="form-select">
+  	  	<option value="1">1 minute</option>
+    		<option value="2">2 minutes</option>
+    		<option value="3">3 minutes</option>
+    		<option value="4">4 minutes</option>
+    		<option value="5">5 minutes</option>
+    		<option value="10">10 minutes</option>
+    		<option value="15">15 minutes</option>
+    		<option value="30">30 minutes</option>
+    		<option value="45">45 minutes</option>
+    		<option value="60">1 hour</option>
+    		<option value="90">1 hour 30 minutes</option>
+    		<option value="120">2 hours</option>
+    		<option value="240">4 hours</option>
+  	  </select>
+      <br />
+      <label for="inputHomePageURL" class="form-label">Homescreen URL:</label>
+      <input type="text" id="inputHomePageURL"  class="form-control" placeholder="http://localhost/config.html">
+      <button id="updateHomescreenURL" class="btn btn-secondary" onclick="runURLUpdate()">Update URL</button>
+    </div>
+  </div>
+	<!-- Buttons -->
+	<div class="col-md-6 d-grid">
+		<button class="btn btn-primary" onclick="runUpdate()">Update:</button>
+    <button class="btn btn-danger" onclick="reboot()">Reboot System:</button>
+	</div>
+	</div>
+</div>
+
+<script>
+	const motionEnable = document.getElementById('motionToggle');
+	const motionThresholdSlider = document.getElementById('motionThresholdSlider');
+	const screenBrightnessSlider = document.getElementById('screenBrightnessSlider');
+	const screenTimeoutSelect = document.getElementById('screenTimeoutSelect');
+  const inputHomePageURL = document.getElementById('inputHomePageURL');
+
+	// Add an event listener to handle changing the value of the screen timeout
+	screenTimeoutSelect.addEventListener('change', updateScreenTimeout);
+	async function updateScreenTimeout() {
+		minutes = screenTimeoutSelect.value;
+		//make the request
+		const res = await fetch('/screen/timeout/'+minutes, { method: 'POST' });
+
+		if (!res.ok) {
+			let errorMsg = `Server returned ${res.status} ${res.statusText}`;
+			try {
+				const errorData = await res.json();
+				if (errorData && errorData.error) {
+					errorMsg = `Server returned ${errorData.error}`;
+				}
+			} catch (parseErr) {
+				// JSON parsing failed — keep default errorMsg
+			}
+			showMessage('Error loading brightness settings: ' + errorMsg, 'danger');
+			return;
+		}
+
+		showMessage('Saved', 'info');
+	}
+
+	// Add an event listener to handle enabling or disabling the motion
+	motionEnable.addEventListener('click', () => {
+		let motionEnabled = motionEnable.checked;
+		let motionURL = '';
+		if(motionEnabled) {
+			motionURL = '/motion/enable';
+		}
+		else {
+			motionURL = '/motion/disable';
+		}
+		fetch(motionURL, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+		})
+		.then(res => res.text())
+		.then(data => showMessage(data, 'success'))
+		.then(data => motionThresholdSlider.disabled = !motionEnabled)
+		.catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
+	});
+
+  // Event Listeners for the motion threshold value
+  motionThresholdSlider.addEventListener('mousemove', () => {
+	  document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
+  });
+	motionThresholdSlider.addEventListener('change', () => {
+    let motionThresholdValue = parseFloat(motionThresholdSlider.value);
+	  fetch('/motion/threshold/'+motionThresholdValue, {
+  		method: 'POST',
+  		headers: { 'Content-Type': 'application/json' }
+	  })
+	  .then(res => res.text())
+	  .then(data => showMessage(data, 'success'))
+	  .catch(err => showMessage('Failed to set threshold: ' + err, 'danger'));
+	});
+
+  // Event Listeners for the screen brightness
+  screenBrightnessSlider.addEventListener('mousemove', () => {
+    document.getElementById('motionThresholdValue').textContent = motionThresholdSlider.value;
+  });
+	screenBrightnessSlider.addEventListener('change', () => {
+    let brightnessValue = parseInt(screenBrightnessSlider.value)
+    fetch('/screen/brightness/'+brightnessValue, {
+      method: 'POST',
+  		headers: { 'Content-Type': 'application/json' }
+    })
+	  .then(res => res.text())
+	  .then(data => showMessage(data, 'success'))
+	  .catch(err => showMessage('Failed to set brightness: ' + err, 'danger'));
+	});
+
+  // Display messages to the user
+	function showMessage(message, type = 'info') {
+	  const alertBox = document.getElementById('messageArea');
+	  alertBox.className = `alert alert-${type}`;
+	  alertBox.textContent = message;
+	  alertBox.classList.remove('d-none');
+	  setTimeout(() => alertBox.classList.add('d-none'), 5000);
+	}
+
+  /*
+	function setBrightness() {
+	  fetch('/screen/brightness', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ brightness: parseInt(screenBrightnessSlider.value) })
+	  })
+	  .then(res => res.text())
+	  .then(data => showMessage(data, 'success'))
+	  .catch(err => showMessage('Failed to set brightness: ' + err, 'danger'));
+	}
+*/
+
+  // Update the HomescreenURL
+  function runURLUpdate() {
+    // TODO: add in some sort of validation
+    let urlValue = inputHomePageURL.value;
+    fetch('/newhomescreen/', {
+      method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+  		body: JSON.stringify({ url: urlValue })
+    })
+    .then(res => res.text())
+    .then(data => showMessage(data, 'info'))
+    .catch(err => showMessage('Update URL failed: ' + err, 'danger'));
+  }
+
+  // Update the website
+	function runUpdate() {
+	  fetch('/update/', { method: 'POST' })
+		.then(res => res.text())
+		.then(data => showMessage(data, 'info'))
+		.then(function() {
+			setTimeout(function() {
+				window.location = window.location;
+			}, 5000)
+		})
+		.catch(err => showMessage('Update failed: ' + err, 'danger'));
+	}
+
+  // Reboot the system
+  function reboot() {
+	  fetch('/reboot/', { method: 'POST' })
+		.then(res => res.text())
+		.then(data => showMessage(data, 'info'))
+		.then(function() {
+			setTimeout(function() {
+			window.location = window.location;
+			}, 10000);
+		})
+		.catch(err => showMessage('Reboot failed: ' + err, 'danger'));
+  }
+
+	// 🔁 Initialize brightness slider from endpoints
+	async function initScreenBrightnessSlider() {
+		try {
+			const res = await fetch('/screen/brightness');
+
+			if (!res.ok) {
+				let errorMsg = `Server returned ${res.status} ${res.statusText}`;
+				try {
+					const errorData = await res.json();
+					if (errorData && errorData.error) {
+						errorMsg = `Server returned ${errorData.error}`;
+					}
+				} catch (parseErr) {
+					// JSON parsing failed — keep default errorMsg
+				}
+				screenBrightnessSlider.disabled = true;
+				showMessage('Error loading brightness settings: ' + errorMsg, 'danger');
+				return;
+			}
+
+			const data = await res.json();
+
+			screenBrightnessSlider.max = data.max;
+			screenBrightnessSlider.value = data.current;
+			document.getElementById('screenBrightnessValue').textContent = data.current;
+		} catch (err) {
+			screenBrightnessSlider.disabled = true;
+			showMessage('Error loading brightness settings: ' + err.message, 'danger');
+		}
+	}
+
+	// Initialize Screen Timeout Slider
+	async function initScreenTimeoutSelect() {
+		try {
+		// Fetch screen timeout
+		fetch('/screen/timeout')
+			.then(res => res.json())
+			.then(data => {
+				document.getElementById('screenTimeoutSelect').value = data.timeout;
+			})
+			.catch(console.error);
+		}
+		catch (err) {
+			showMessage('Error loading screentimeout settings: ' + err, 'danger');
+		}
+	}
+
+	// Initialize the Motion configurations
+	async function initMotion() {
+		try{
+			// Fetch current motion.py state
+			fetch('/motion/config')
+			.then(res => res.json())
+			.then(data => {
+				document.getElementById('motionToggle').checked = data.enabled;
+				if(!data.enabled) {
+					motionThresholdSlider.disabled = true;
+				}
+				motionThresholdSlider.value = data.threshold;
+    	  document.getElementById('motionThresholdValue').textContent = data.threshold;
+			})
+			.catch(console.error);
+		} catch(err) {
+			showMessage('Error loading screentimeout settings: ' + err, 'danger');
+		}
+	}
+
+  // Initialize the Home Screen URL control
+  async function initHomePageURL() {
+    try {
+      //Fetch the current homescreen url
+      fetch('/homescreen')
+			.then(res => res.json())
+      .then(data => {
+        inputHomePageURL.value = data.url
+      })
+      .catch(err => {
+        showMessage('Error loading homescreen URL: ' + err, 'danger');
+      });
+    } catch(err) {
+      showMessage('Error loading homescreen URL: ' + err, 'danger');
+    }
+  }
+
+	// On page load
+	window.addEventListener('DOMContentLoaded', () => {
+	  initScreenBrightnessSlider();
+	  initScreenTimeoutSelect();
+	  initMotion();
+    initHomePageURL();
+	});
+
+</script>
+
+</body>
+</html>
