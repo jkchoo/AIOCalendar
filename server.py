@@ -36,7 +36,7 @@ def get_brightness_path():
             return None
         return os.path.join(base_path, entries[0], "brightness")
     except Exception as e:
-        print(f"Unable to locate brightness control: {e}", flush=True))
+        print(f"Unable to locate brightness control: {e}", flush=True)
         return None
 
 
