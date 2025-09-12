@@ -67,7 +67,7 @@ def index():
 def serve_static(filename):
     return send_from_directory(STATIC_DIR, filename)
 
-@app.route("/update", methods=["POST"])
+@app.route("/update", methods=["POST"], strict_slashes=False)
 def update():
     print("Starting update from Git...")
     socketio.start_background_task(target=do_update)
@@ -84,7 +84,7 @@ def do_update():
         print("Git pull failed.")
 
 
-@app.route("/reboot", methods=["POST"])
+@app.route("/reboot", methods=["POST"], strict_slashes=False)
 def reboot():
     try:
         print("Rebooting now")
@@ -95,7 +95,7 @@ def reboot():
         return f"Error rebooting: {e}", 500
 
 
-@app.route("/motion/enable", methods=["POST"])
+@app.route("/motion/enable", methods=["POST"], strict_slashes=False)
 def motion_enable():
     print(f"Enabling motion.py from {request.remote_addr}")
     try:
@@ -118,7 +118,7 @@ def motion_enable():
     return "motion.py started", 200
 
 
-@app.route("/motion/disable", methods=["POST"])
+@app.route("/motion/disable", methods=["POST"], strict_slashes=False)
 def motion_disable():
     print(f"Disabling motion.py from {request.remote_addr}")
     try:
@@ -141,7 +141,7 @@ def motion_disable():
     return "motion.py stopped", 200
 
 
-@app.route("/motion/threshold/<value>", methods=["POST"])
+@app.route("/motion/threshold/<value>", methods=["POST"], strict_slashes=False)
 def motion_threshold(value):
     try:
         threshold = float(value)
@@ -177,7 +177,7 @@ def motion_config():
         return jsonify({"error": "Failed to read motion config"}), 500
 
 
-@app.route("/screen/brightness/<int:value>", methods=["POST"])
+@app.route("/screen/brightness/<int:value>", methods=["POST"], strict_slashes=False)
 def screen_brightness(value):
     brightness_path = get_brightness_path()
     if not brightness_path:
@@ -215,7 +215,7 @@ def get_brightness():
         return jsonify({"error": "Unable to read current brightness"}), 500
 
 
-@app.route("/screen/timeout/<int:minutes>", methods=["POST"])
+@app.route("/screen/timeout/<int:minutes>", methods=["POST"], strict_slashes=False)
 def set_timeout(minutes):
     seconds = minutes * 60
     cmd = f"gsettings set org.gnome.desktop.session idle-delay {seconds}"
@@ -252,7 +252,7 @@ def new_homescreen():
         for i, line in enumerate(lines):
             if kiosk_config in line:
                 parts = line.split(" ")
-                parts[-1] = url
+                parts[-1] = url + "\n";
                 lines[i] = " ".join(parts)
 
         if not url:
