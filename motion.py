@@ -1,4 +1,6 @@
 # import the necessary packages
+import os;
+import json;
 import cv2;
 import gradio as gr;
 import numpy as np;
@@ -7,9 +9,22 @@ from datetime import datetime;
 import pyautogui;
 #import matplotlib.pyplot as plt
 
+
+config_path = os.path.join(root_path, "motion_config.json");
+config = {};
+
+try:
+    if os.path.exists(config_path):
+        with open(config_path, "r") as fil:
+            config = json.load(fil);
+except Exception as e:
+    print(f"Error reading motion config: {e}", flush=True)
+    config.threshold = 5;
+    config.enabled = False;
+
 # Log file location
-logLoc = '~/motion/motion.log';
-valLoc = "~/motion/values.log";
+logLoc = os.path.join(root_path, "motion.log");
+valLoc = os.path.join(root_path, "values.log");
 
 # How often I want to see the averageDifference
 avgDiffCounter = 0;
@@ -40,15 +55,15 @@ def detectMotion():
         # Get the FPS
         fps = cap.get(cv2.CAP_PROP_FPS)
         # Define FPS counter
-        frameCounter = 0
-        rollingAverage = []
+        frameCounter = 0;
+        rollingAverage = [];
         #print(fps)
         # Define the mean value of the webcam feed
-        lastMeanValueOfFrame = 0
+        lastMeanValueOfFrame = 0;
 
         # Define the threshold to detect motion
         #We need to read this in through a file
-        threshold = 5
+        threshold = 5;
 
         # Start the loop
         while True:
@@ -122,3 +137,7 @@ def detectMotion():
         # Release the camera
         cap.release()
         cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    if config.enabled:
+        detectMotion();

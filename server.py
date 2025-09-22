@@ -17,8 +17,8 @@ app.logger.setLevel(logging.DEBUG)
 socketio = SocketIO(app)
 
 # Paths
-root_path = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(root_path, "motion_config.json")
+root_path = os.path.dirname(os.path.abspath(__file__));
+config_path = os.path.join(root_path, "motion_config.json");
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 with open(os.path.join(root_path, "home_file.conf"), "r") as f:
@@ -108,13 +108,13 @@ def reboot():
 def motion_enable():
     print(f"Enabling motion.py from {request.remote_addr}", flush=True)
     try:
-        config = {}
+        config = {};
         if os.path.exists(config_path):
             with open(config_path, "r") as f:
-                config = json.load(f)
-        config["enabled"] = True
-        with open(config_path, "w") as f:
-            json.dump(config, f, indent=2)
+                config = json.load(f);
+                config["enabled"] = True;
+            with open(config_path, "w") as f:
+                json.dump(config, f, indent=2);
     except Exception as e:
         print(f"Error writing motion config: {e}", flush=True)
         return "Failed to update config", 500
