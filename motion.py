@@ -9,7 +9,7 @@ from datetime import datetime;
 import pyautogui;
 #import matplotlib.pyplot as plt
 
-
+root_path = os.path.dirname(os.path.abspath(__file__));
 config_path = os.path.join(root_path, "motion_config.json");
 config = {};
 
