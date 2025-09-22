@@ -47,6 +47,10 @@ fontToUse = {
 def detectMotion():
     # Open the camera stream
     try:
+        with open(logLoc, 'a') as file:
+            now = datetime.now();
+            file.write(f"starting {now}");
+        print("Starting");
         global cameraResolution;
         cap = cv2.VideoCapture(0);
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, cameraResolution['width']);
@@ -67,27 +71,30 @@ def detectMotion():
 
         # Start the loop
         while True:
-            ret, frame = cap.read()
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frameCounter += 1
+            ret, frame = cap.read();
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY);
+            frameCounter += 1;
             try:
-                cv2.imshow('frame',frame)
+                cv2.imshow('frame',frame);
                 # This is needed to show the output of the camera
                 if (cv2.waitKey(1) & 0xFF == ord('q')):
-                    break
+                    break;
             except:
                 print("Can't show the camera output")
+                with open(logLoc, 'a') as file:
+                    now = datetime.now();
+                    file.write(f"Can't show the  camera output at {now}");
 
         # Compute the difference
-        diff = np.abs(np.mean(gray) - lastMeanValueOfFrame)
-        rollingAverage.append(diff)
+        diff = np.abs(np.mean(gray) - lastMeanValueOfFrame);
+        rollingAverage.append(diff);
         #print(rollingAverage)
-        print(diff)
+        print(diff);
 
-        #print(gray)
-        #print("\n\n\n")
+        #print(gray);
+        #print("\n\n\n");
 
-        now = datetime.now()
+        now = datetime.now();
 
         if diff > threshold:
             #print(f"Motion detected value {diff} at {now}")
@@ -97,6 +104,8 @@ def detectMotion():
             with open(logLoc, 'a') as file:
               file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
             curr = now.strftime("%y-%m-%d %H-%M-%S")
+
+            #TODO: Rewrite how these files are shared
             imgFile = '/home/mirror/motion/'+curr+'.jpg'
             #print(imgFile)
             #newFrame = np.rot90(frame)
@@ -109,6 +118,7 @@ def detectMotion():
                     fontToUse['thickness'],
                     fontToUse['lineType'])
             cv2.imwrite(imgFile,np.rot90(frame))
+
         # Store the new difference
         lastMeanValueOfFrame = np.mean(frame)
 
@@ -131,7 +141,7 @@ def detectMotion():
     except Exception as e:
         print(f"Crash from {e}")
         with open(logLoc, 'a') as file:
-            now = datetime.now()
+            now = datetime.now();
             file.write(f"Program crashed at {now} with error {e}\n")
     finally:
         # Release the camera
