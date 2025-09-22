@@ -149,7 +149,7 @@ def motion_disable():
 
     return "motion.py stopped", 200
 
-
+# TODO: Rewrite this to use correct POST
 @app.route("/motion/threshold/<value>", methods=["POST"], strict_slashes=False)
 def motion_threshold(value):
     try:
@@ -319,6 +319,7 @@ if __name__ == "__main__":
             config = json.load(f)
         if config.get("enabled"):
             print("motion.py is enabled in config. Starting...", flush=True)
-            run_command("python3 /path/to/motion.py &")
+            # We need to change this to use the local
+            run_command("venv/bin/python3 /path/to/motion.py &")
 
     socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
