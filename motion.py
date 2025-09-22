@@ -19,8 +19,8 @@ try:
             config = json.load(fil);
 except Exception as e:
     print(f"Error reading motion config: {e}", flush=True)
-    config.threshold = 5;
-    config.enabled = False;
+    config["threshold"] = 5;
+    config["enabled"] = False;
 
 # Log file location
 logLoc = os.path.join(root_path, "motion.log");
@@ -63,7 +63,7 @@ def detectMotion():
 
         # Define the threshold to detect motion
         #We need to read this in through a file
-        threshold = 5;
+        threshold = config["threshold"];
 
         # Start the loop
         while True:
@@ -139,5 +139,5 @@ def detectMotion():
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    if config.enabled:
+    if config["enabled"]:
         detectMotion();
