@@ -52,7 +52,6 @@ def detectMotion():
             now = datetime.now();
             file.write(f"starting {now}");
         print("Starting");
-        global cameraResolution;
         cap = cv2.VideoCapture(0);
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, cameraResolution['width']);
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cameraResolution['height']);
@@ -131,7 +130,6 @@ def detectMotion():
                     averageChange = np.mean(rollingAverage)
                     # Clear out the rolling average
                     rollingAverage = [];
-                    global valLoc;
                     with open(valLoc, 'a') as file:
                         file.write(f"Average difference at {now} is {averageChange}\n")
                 #print(f"{frameCounter} {avgDiffCounter}")
