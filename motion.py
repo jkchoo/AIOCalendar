@@ -104,22 +104,24 @@ def detectMotion():
                   file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
                 curr = now.strftime("%y-%m-%d %H-%M-%S")
 
-                motionPath = os.path.join(root_path, 'motion/');
-                if not os.path.exists(motionPath):
-                    #Then we need to make the folder
-                    os.makedirs(motionPath, exist_ok=True)
-                imgFile = motionPath + curr + '.jpg';
-                #print(imgFile)
-                #newFrame = np.rot90(frame)
-                cv2.putText(frame,
-                        str(np.round(diff,1)),
-                        (10, cameraResolution['height']-10),
-                        fontToUse['face'],
-                        fontToUse['scale'],
-                        fontToUse['color'],
-                        fontToUse['thickness'],
-                        fontToUse['lineType'])
-                cv2.imwrite(imgFile,np.rot90(frame))
+                # Decide if we should store image files for debugging
+                if config["debug"]:
+                    motionPath = os.path.join(root_path, 'motion/');
+                    if not os.path.exists(motionPath):
+                        #Then we need to make the folder
+                        os.makedirs(motionPath, exist_ok=True)
+                    imgFile = motionPath + curr + '.jpg';
+                    #print(imgFile)
+                    #newFrame = np.rot90(frame)
+                    cv2.putText(frame,
+                            str(np.round(diff,1)),
+                            (10, cameraResolution['height']-10),
+                            fontToUse['face'],
+                            fontToUse['scale'],
+                            fontToUse['color'],
+                            fontToUse['thickness'],
+                            fontToUse['lineType'])
+                    cv2.imwrite(imgFile,np.rot90(frame))
 
             # Store the new difference
             lastMeanValueOfFrame = np.mean(frame)
