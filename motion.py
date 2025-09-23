@@ -46,7 +46,15 @@ fontToUse = {
     'thickness': 2
 }
 
+am_i_running = False;
+
+def stopMotion():
+    global am_i_running;
+    am_i_running = False;
+
 def detectMotion():
+    global am_i_running;
+    am_i_running = True;
     print("Starting motion detction");
     # Open the camera stream
     try:
@@ -72,7 +80,7 @@ def detectMotion():
         threshold = config["threshold"];
         print(f"Threshold is set to {threshold}")
         # Start the loop
-        while True:
+        while am_i_running:
             ret, frame = cap.read();
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY);
             frameCounter += 1;
