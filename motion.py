@@ -10,6 +10,10 @@ import pyautogui;
 #import matplotlib.pyplot as plt
 
 root_path = os.path.dirname(os.path.abspath(__file__));
+# Log file location
+logLoc = os.path.join(root_path, "motion.log");
+valLoc = os.path.join(root_path, "values.log");
+# Config file location
 config_path = os.path.join(root_path, "motion_config.json");
 config = {};
 
@@ -21,10 +25,8 @@ except Exception as e:
     print(f"Error reading motion config: {e}", flush=True)
     config["threshold"] = 5;
     config["enabled"] = False;
+    config["debug"] = False;
 
-# Log file location
-logLoc = os.path.join(root_path, "motion.log");
-valLoc = os.path.join(root_path, "values.log");
 
 # How often I want to see the averageDifference
 avgDiffCounter = 0;
