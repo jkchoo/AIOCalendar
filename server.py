@@ -60,7 +60,7 @@ def start_motion():
         print(f"Failed to start motion.py: {err}", flush=True)
         return "Failed to start motion.py", 500
 
-    return "motion.py started", 200
+    return "motion.py started", 200;
 
 # Stop the motion detection program
 def stop_motion():
@@ -346,7 +346,8 @@ if __name__ == "__main__":
         with open(config_path, "r") as f:
             config = json.load(f)
         if config.get("enabled"):
-            print("motion.py is enabled in config. Starting...", flush=True)
+            run_com = root_path + "/venv/bin/python3 " + root_path + "/motion.py &";
+            print(f"motion.py is enabled in config. Starting... with {run_com}", flush=True)
             # We need to change this to use the local
             start_motion();
 
