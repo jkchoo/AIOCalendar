@@ -42,8 +42,9 @@ def get_brightness_path():
 
 # This function will restart the motion task
 def restart_motion():
+
+    stop_motion();
     try:
-        stop_motion();
         start_motion();
     except e:
         return "Error " + e, 500;
@@ -52,7 +53,7 @@ def restart_motion():
 
 # Start the motion detection program
 def start_motion():
-    code, _, err = run_command("venv/bin/python3 motion.py &")
+    code, _, err = run_command("cd " + root_path + "; venv/bin/python3 motion.py &")
     if code != 0:
         print(f"Failed to start motion.py: {err}", flush=True)
         return "Failed to start motion.py", 500
