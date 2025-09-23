@@ -86,59 +86,58 @@ def detectMotion():
                     now = datetime.now();
                     file.write(f"Can't show the  camera output at {now}");
 
-        # Compute the difference
-        diff = np.abs(np.mean(gray) - lastMeanValueOfFrame);
-        rollingAverage.append(diff);
-        #print(rollingAverage)
-        print(diff);
+            # Compute the difference
+            diff = np.abs(np.mean(gray) - lastMeanValueOfFrame);
+            rollingAverage.append(diff);
+            #print(rollingAverage)
+            print(diff);
 
-        #print(gray);
-        #print("\n\n\n");
+            #print(gray);
+            #print("\n\n\n");
 
-        now = datetime.now();
+            now = datetime.now();
+            if diff > threshold:
+                #print(f"Motion detected value {diff} at {now}")
+                pyautogui.press('shift');
+                #global logLoc;
+                #global fontToUse;
+                with open(logLoc, 'a') as file:
+                  file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
+                curr = now.strftime("%y-%m-%d %H-%M-%S")
 
-        if diff > threshold:
-            #print(f"Motion detected value {diff} at {now}")
-            pyautogui.press('shift');
-            #global logLoc;
-            #global fontToUse;
-            with open(logLoc, 'a') as file:
-              file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
-            curr = now.strftime("%y-%m-%d %H-%M-%S")
+                #TODO: Rewrite how these files are shared
+                imgFile = os.path.join(root_path, 'motion/'+curr+'.jpg'
+                #print(imgFile)
+                #newFrame = np.rot90(frame)
+                cv2.putText(frame,
+                        str(np.round(diff,1)),
+                        (10, cameraResolution['height']-10),
+                        fontToUse['face'],
+                        fontToUse['scale'],
+                        fontToUse['color'],
+                        fontToUse['thickness'],
+                        fontToUse['lineType'])
+                cv2.imwrite(imgFile,np.rot90(frame))
 
-            #TODO: Rewrite how these files are shared
-            imgFile = '/home/mirror/motion/'+curr+'.jpg'
-            #print(imgFile)
-            #newFrame = np.rot90(frame)
-            cv2.putText(frame,
-                    str(np.round(diff,1)),
-                    (10, cameraResolution['height']-10),
-                    fontToUse['face'],
-                    fontToUse['scale'],
-                    fontToUse['color'],
-                    fontToUse['thickness'],
-                    fontToUse['lineType'])
-            cv2.imwrite(imgFile,np.rot90(frame))
+            # Store the new difference
+            lastMeanValueOfFrame = np.mean(frame)
 
-        # Store the new difference
-        lastMeanValueOfFrame = np.mean(frame)
+            if frameCounter == fps:
+                frameCounter = 0
+                global avgDiffCounter;
+                global avgDiffLimit;
+                avgDiffCounter += 1;
+                if avgDiffCounter == avgDiffLimit:
+                    avgDiffCounter = 0
+                    averageChange = np.mean(rollingAverage)
+                    # Clear out the rolling average
+                    rollingAverage = [];
+                    global valLoc;
+                    with open(valLoc, 'a') as file:
+                        file.write(f"Average difference at {now} is {averageChange}\n")
+                #print(f"{frameCounter} {avgDiffCounter}")
 
-        if frameCounter == fps:
-            frameCounter = 0
-            global avgDiffCounter;
-            global avgDiffLimit;
-            avgDiffCounter += 1;
-            if avgDiffCounter == avgDiffLimit:
-                avgDiffCounter = 0
-                averageChange = np.mean(rollingAverage)
-                # Clear out the rolling average
-                rollingAverage = [];
-                global valLoc;
-                with open(valLoc, 'a') as file:
-                    file.write(f"Average difference at {now} is {averageChange}\n")
-            #print(f"{frameCounter} {avgDiffCounter}")
-
-        #time.sleep(.125)
+            #time.sleep(.125)
     except Exception as e:
         print(f"Crash from {e}")
         with open(logLoc, 'a') as file:
