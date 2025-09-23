@@ -45,6 +45,7 @@ fontToUse = {
 }
 
 def detectMotion():
+    print("Starting motion detction");
     # Open the camera stream
     try:
         with open(logLoc, 'a') as file:
@@ -99,8 +100,8 @@ def detectMotion():
         if diff > threshold:
             #print(f"Motion detected value {diff} at {now}")
             pyautogui.press('shift');
-            global logLoc;
-            global fontToUse;
+            #global logLoc;
+            #global fontToUse;
             with open(logLoc, 'a') as file:
               file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
             curr = now.strftime("%y-%m-%d %H-%M-%S")
