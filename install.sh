@@ -52,7 +52,8 @@ pip install \
   eventlet \
   opencv-python \
   numpy \
-  pyautogui
+  pyautogui \
+  python-xlib
 
 deactivate
 
