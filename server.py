@@ -40,6 +40,34 @@ def get_brightness_path():
         print(f"Unable to locate brightness control: {e}", flush=True)
         return None
 
+# This function will restart the motion task
+def restart_motion():
+    try:
+        stop_motion();
+        start_motion();
+    except e:
+        return "Error " + e, 500;
+
+    return "Success", 200;
+
+# Start the motion detection program
+def start_motion():
+    code, _, err = run_command("venv/bin/python3 /path/to/motion.py &")
+    if code != 0:
+        print(f"Failed to start motion.py: {err}", flush=True)
+        return "Failed to start motion.py", 500
+
+    return "motion.py started", 200
+
+# Stop the motion detection program
+def stop_motion():
+    code, _, err = run_command("pkill -f motion.py");
+    if code != 0:
+        print(f"Failed to stop motion.py: {err}", flush=True);
+        return "Failed to stop motion.py", 500;
+
+    return "Success", 200;
+
 
 def get_max_brightness(path_to_device):
     try:
@@ -116,15 +144,10 @@ def motion_enable():
             with open(config_path, "w") as f:
                 json.dump(config, f, indent=2);
     except Exception as e:
-        print(f"Error writing motion config: {e}", flush=True)
-        return "Failed to update config", 500
+        print(f"Error writing motion config: {e}", flush=True);
+        return "Failed to update config", 500;
 
-    code, _, err = run_command("venv/bin/python3 /path/to/motion.py &")
-    if code != 0:
-        print(f"Failed to start motion.py: {err}", flush=True)
-        return "Failed to start motion.py", 500
-
-    return "motion.py started", 200
+    return start_motion();
 
 
 @app.route("/motion/disable", methods=["POST"], strict_slashes=False)
@@ -142,14 +165,12 @@ def motion_disable():
         print(f"Error writing motion config: {e}", flush=True)
         return "Failed to update config", 500
 
-    code, _, err = run_command("pkill -f motion.py")
-    if code != 0:
-        print(f"Failed to stop motion.py: {err}", flush=True)
-        return "Failed to stop motion.py", 500
+    return stop_motion();
 
-    return "motion.py stopped", 200
 
 # TODO: Rewrite this to use correct POST
+# Like this data = request.get_json()
+# url = data.get("url", "")
 @app.route("/motion/threshold/<value>", methods=["POST"], strict_slashes=False)
 def motion_threshold(value):
     try:
@@ -166,6 +187,10 @@ def motion_threshold(value):
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
         print(f"Updated motion threshold to {threshold}", flush=True)
+
+        # Use the new threshold value
+        restart_motion();
+
         return "Threshold updated", 200
     except Exception as e:
         print(f"Error writing threshold: {e}", flush=True)
@@ -320,6 +345,6 @@ if __name__ == "__main__":
         if config.get("enabled"):
             print("motion.py is enabled in config. Starting...", flush=True)
             # We need to change this to use the local
-            run_command("venv/bin/python3 /path/to/motion.py &")
+            start_motion();
 
     socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
