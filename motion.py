@@ -104,7 +104,11 @@ def detectMotion():
                   file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
                 curr = now.strftime("%y-%m-%d %H-%M-%S")
 
-                imgFile = os.path.join(root_path, 'motion/'+curr+'.jpg');
+                motionPath = os.path.join(root_path, 'motion/');
+                if not os.path.exists(motionPath):
+                    #Then we need to make the folder
+                    os.makedirs(motionPath, exist_ok=True)
+                imgFile = motionPath + curr + '.jpg';
                 #print(imgFile)
                 #newFrame = np.rot90(frame)
                 cv2.putText(frame,
