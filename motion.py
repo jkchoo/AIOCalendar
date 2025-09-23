@@ -68,7 +68,7 @@ def detectMotion():
         # Define the threshold to detect motion
         #We need to read this in through a file
         threshold = config["threshold"];
-
+        print(f"Threshold is set to {threshold}")
         # Start the loop
         while True:
             ret, frame = cap.read();
@@ -89,7 +89,7 @@ def detectMotion():
             diff = np.abs(np.mean(gray) - lastMeanValueOfFrame);
             rollingAverage.append(diff);
             #print(rollingAverage)
-            print(diff);
+            #print(diff);
 
             #print(gray);
             #print("\n\n\n");
