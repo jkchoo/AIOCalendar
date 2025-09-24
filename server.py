@@ -54,11 +54,15 @@ def restart_motion():
 # Start the motion detection program
 def start_motion():
     run_com = root_path + "/venv/bin/python3 " + root_path + "/motion.py &";
-    print(f"Starting with command \n{run_com}\n");
-    code, _, err = run_command(run_com);
-    if code != 0:
-        print(f"Failed to start motion.py: {err}", flush=True)
-        return "Failed to start motion.py", 500
+    print(f"Starting with command \\n{run_com}\\n");
+    try
+        code, _, err = run_command(run_com);
+        if code != 0:
+            print(f"Failed to start motion.py: {err}", flush=True)
+            return "Failed to start motion.py", 500;
+    except Exception as e:
+        print(f"Failed to start motion with exception {e}", flush=True);
+        return "Failed to start motion.py", 500;
 
     return "motion.py started", 200;
 
