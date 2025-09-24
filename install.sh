@@ -52,8 +52,7 @@ pip install \
   eventlet \
   opencv-python \
   numpy \
-  pyautogui \
-  python-xlib
+  pyautogui
 
 deactivate
 
@@ -74,6 +73,20 @@ Restart=on-failure
 
 [Install]
 WantedBy=default.target
+EOF
+
+# --------Motion Serivce------------
+echo "[*] Creating motion desktop file..."
+cat <<EOF | sudo tee Motion.desktop > /dev/null
+[Desktop Entry]
+Type=Application
+Exec=$PROJECT_DIR/venv/bin/python $PROJECT_DIR/motion.py
+X-GNOME-Autostart-enabled=false
+NoDisplay=false
+Hidden=false
+Name[en_US]=Motion
+Comment[en_US]=No description
+X-GNOME-Autostart-Delay=0
 EOF
 
 # -------- Permissions & Reload --------

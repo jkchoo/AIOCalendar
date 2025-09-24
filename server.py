@@ -24,9 +24,10 @@ STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 with open(os.path.join(root_path, "home_file.conf"), "r") as f:
     home_path = f.readline().strip()
 
-kiosk_path = os.path.join(home_path, "Kiosk.desktop")
-kiosk_config = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk"
+kiosk_path = os.path.join(home_path, "Kiosk.desktop");
+kiosk_config = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk";
 
+motion_autostart_path = os.path.join(home_path, "Motion.desktop");
 
 # ---------- Helpers ----------
 def get_brightness_path():
@@ -40,41 +41,36 @@ def get_brightness_path():
         print(f"Unable to locate brightness control: {e}", flush=True)
         return None
 
-# This function will restart the motion task
-def restart_motion():
-
-    stop_motion();
-    try:
-        start_motion();
-    except e:
-        return "Error " + e, 500;
-
-    return "Success", 200;
-
 # Start the motion detection program
 def start_motion():
-    run_com = root_path + "/venv/bin/python3 " + root_path + "/motion.py &";
+    run_com = "cp Motion.desktop " + motion_autostart_path;
     print(f"Starting with command \\n{run_com}\\n");
     try:
         code, _, err = run_command(run_com);
         print(f"Motion started with {code}");
         if code != 0:
-            print(f"Failed to start motion.py: {err}", flush=True)
-            return "Failed to start motion.py", 500;
+            print(f"Failed to enable motion.py: {err}", flush=True)
+            return "Failed to enable motion.py", 500;
     except Exception as e:
-        print(f"Failed to start motion with exception {e}", flush=True);
-        return "Failed to start motion.py", 500;
+        print(f"Failed to enable motion with exception {e}", flush=True);
+        return "Failed to enable motion.py", 500;
 
-    return "motion.py started", 200;
+    return "motion.py enabled", 200;
 
 # Stop the motion detection program
 def stop_motion():
-    code, _, err = run_command("pkill -f motion.py");
-    if code != 0:
-        print(f"Failed to stop motion.py: {err}", flush=True);
-        return "Failed to stop motion.py", 500;
+    run_com = "rm " + motion_autostart_path;print(f"Starting with command \\n{run_com}\\n");
+    try:
+        code, _, err = run_command(run_com);
+        print(f"Motion started with {code}");
+        if code != 0:
+            print(f"Failed to disable motion.py: {err}", flush=True)
+            return "Failed to disable motion.py", 500;
+    except Exception as e:
+        print(f"Failed to disable motion with exception {e}", flush=True);
+        return "Failed to disable motion.py", 500;
 
-    return "Success", 200;
+    return "motion.py disable", 200;
 
 
 def get_max_brightness(path_to_device):
