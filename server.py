@@ -5,7 +5,6 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_socketio import SocketIO
 import sys
 import logging
-from motion import detectMotion, stopMotion;
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -54,21 +53,21 @@ def restart_motion():
 
 # Start the motion detection program
 def start_motion():
-    try:
-        detectMotion();
-    except Exception as e:
-        print(f"Failed to start motion.py: {e}", flush=True);
-        return "Failed to start motion.py: " + e, 500;
+    run_com = root_path + "/venv/bin/python3 " + root_path + "/motion.py &";
+    print(f"Starting with command \n{run_com}\n");
+    code, _, err = run_command(run_com);
+    if code != 0:
+        print(f"Failed to start motion.py: {err}", flush=True)
+        return "Failed to start motion.py", 500
 
     return "motion.py started", 200;
 
 # Stop the motion detection program
 def stop_motion():
-    try:
-        stopMotion();
-    except Exception as e:
-        print(f"Failed to stop motion.py: {e}", flush=True);
-        return "Failed to stop motion.py: " + e, 500;
+    code, _, err = run_command("pkill -f motion.py");
+    if code != 0:
+        print(f"Failed to stop motion.py: {err}", flush=True);
+        return "Failed to stop motion.py", 500;
 
     return "Success", 200;
 
