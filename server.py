@@ -44,7 +44,7 @@ def get_brightness_path():
 # Start the motion detection program
 def start_motion():
     run_com = "cp Motion.desktop " + motion_autostart_path;
-    print(f"Starting with command \\n{run_com}\\n");
+    print(f"Starting with command \n{run_com}\n");
     try:
         code, _, err = run_command(run_com);
         print(f"Motion started with {code}");
@@ -59,7 +59,8 @@ def start_motion():
 
 # Stop the motion detection program
 def stop_motion():
-    run_com = "rm " + motion_autostart_path;print(f"Starting with command \\n{run_com}\\n");
+    run_com = "rm " + motion_autostart_path;
+    print(f"Stopping with command \n{run_com}\n");
     try:
         code, _, err = run_command(run_com);
         print(f"Motion started with {code}");
