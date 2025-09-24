@@ -57,6 +57,7 @@ def start_motion():
     print(f"Starting with command \\n{run_com}\\n");
     try:
         code, _, err = run_command(run_com);
+        print(f"Motion started with {code}");
         if code != 0:
             print(f"Failed to start motion.py: {err}", flush=True)
             return "Failed to start motion.py", 500;
