@@ -80,7 +80,7 @@ echo "[*] Creating motion desktop file..."
 cat <<EOF | sudo tee Motion.desktop > /dev/null
 [Desktop Entry]
 Type=Application
-Exec=$PROJECT_DIR/venv/bin/python $PROJECT_DIR/motion.py
+Exec=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/motion.py
 X-GNOME-Autostart-enabled=false
 NoDisplay=false
 Hidden=false
