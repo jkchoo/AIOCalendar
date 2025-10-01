@@ -102,11 +102,11 @@ echo "[*] Reloading systemd for motion service..."
 sudo systemctl daemon-reload
 
 echo "[*] Enabling and starting $MOTION_SERVICE_NAME..."
-sudo systemctl enable "$MOTION_SERVICE_NAME"
-sudo systemctl restart "$MOTION_SERVICE_NAME"
+#sudo systemctl enable "$MOTION_SERVICE_NAME"
+#sudo systemctl restart "$MOTION_SERVICE_NAME"
 
-echo "[*] Checking motion service status..."
-sudo systemctl status "$MOTION_SERVICE_NAME" --no-pager || true
+#echo "[*] Checking motion service status..."
+#sudo systemctl status "$MOTION_SERVICE_NAME" --no-pager || true
 
 # -------- Permissions & Reload --------
 sudo chmod 644 "$SERVICE_PATH"
@@ -116,9 +116,9 @@ sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 
 ## -------- Enable & Start Service --------
-#echo "[*] Enabling and starting $SERVICE_NAME..."
-#sudo systemctl enable "$SERVICE_NAME"
-#sudo systemctl restart "$SERVICE_NAME"
+echo "[*] Enabling and starting $SERVICE_NAME..."
+sudo systemctl enable "$SERVICE_NAME"
+sudo systemctl restart "$SERVICE_NAME"
 
 # -------- Status --------
 echo "[*] Checking service status..."
