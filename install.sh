@@ -75,19 +75,38 @@ Restart=on-failure
 WantedBy=default.target
 EOF
 
-# --------Motion Serivce------------
-echo "[*] Creating motion desktop file..."
-cat <<EOF | sudo tee Motion.desktop > /dev/null
-[Desktop Entry]
-Type=Application
-Exec=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/motion.py
-X-GNOME-Autostart-enabled=false
-NoDisplay=false
-Hidden=false
-Name[en_US]=Motion
-Comment[en_US]=No description
-X-GNOME-Autostart-Delay=0
+# --------Motion Service------------
+echo "[*] Creating motion systemd service file..."
+MOTION_SERVICE_NAME="motion.service"
+MOTION_SERVICE_PATH="/etc/systemd/system/$MOTION_SERVICE_NAME"
+cat <<EOF | sudo tee "$MOTION_SERVICE_PATH" > /dev/null
+[Unit]
+Description=Motion Service (Python motion.py)
+After=network.target graphical.target
+
+[Service]
+User=$USER_NAME
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/motion.py
+Environment=DISPLAY=$DISPLAY_NUM
+Environment=XAUTHORITY=$XAUTH_PATH
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
 EOF
+
+sudo chmod 644 "$MOTION_SERVICE_PATH"
+
+echo "[*] Reloading systemd for motion service..."
+sudo systemctl daemon-reload
+
+echo "[*] Enabling and starting $MOTION_SERVICE_NAME..."
+sudo systemctl enable "$MOTION_SERVICE_NAME"
+sudo systemctl restart "$MOTION_SERVICE_NAME"
+
+echo "[*] Checking motion service status..."
+sudo systemctl status "$MOTION_SERVICE_NAME" --no-pager || true
 
 # -------- Permissions & Reload --------
 sudo chmod 644 "$SERVICE_PATH"

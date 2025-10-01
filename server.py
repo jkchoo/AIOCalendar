@@ -27,7 +27,7 @@ with open(os.path.join(root_path, "home_file.conf"), "r") as f:
 kiosk_path = os.path.join(home_path, "Kiosk.desktop");
 kiosk_config = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk";
 
-motion_autostart_path = os.path.join(home_path, "Motion.desktop");
+#motion_autostart_path = os.path.join(home_path, "Motion.desktop");
 
 # ---------- Helpers ----------
 def get_brightness_path():
@@ -42,12 +42,13 @@ def get_brightness_path():
         return None
 
 # Start the motion detection program
-def start_motion():
-    run_com = "cp Motion.desktop " + motion_autostart_path;
+def enable_motion():
+    #run_com = "cp Motion.desktop " + motion_autostart_path;
+    run_command("sudo systemctl enable motion.service; sudo systemctl daemon-reload; sudo systemctl start motion.service;");
     print(f"Starting with command \n{run_com}\n");
     try:
         code, _, err = run_command(run_com);
-        print(f"Motion started with {code}");
+        print(f"Motion enabled with {code}");
         if code != 0:
             print(f"Failed to enable motion.py: {err}", flush=True)
             return "Failed to enable motion.py", 500;
@@ -58,12 +59,12 @@ def start_motion():
     return "motion.py enabled", 200;
 
 # Stop the motion detection program
-def stop_motion():
-    run_com = "rm " + motion_autostart_path;
+def disable_motion():
+    run_command("sudo systemctl stop motion.service; sudo systemctl disable motion.service; sudo systemctl daemon-reload;");
     print(f"Stopping with command \n{run_com}\n");
     try:
         code, _, err = run_command(run_com);
-        print(f"Motion started with {code}");
+        print(f"Motion disabled with {code}");
         if code != 0:
             print(f"Failed to disable motion.py: {err}", flush=True)
             return "Failed to disable motion.py", 500;
@@ -152,7 +153,7 @@ def motion_enable():
         print(f"Error writing motion config: {e}", flush=True);
         return "Failed to update config", 500;
 
-    return start_motion();
+    return enable_motion();
 
 
 @app.route("/motion/disable", methods=["POST"], strict_slashes=False)
@@ -170,7 +171,8 @@ def motion_disable():
         print(f"Error writing motion config: {e}", flush=True)
         return "Failed to update config", 500
 
-    return stop_motion();
+    # Do the disabling
+    return disable_motion();
 
 
 # TODO: Rewrite this to use correct POST
@@ -346,11 +348,11 @@ if __name__ == "__main__":
     # Auto-start motion if enabled
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
-            config = json.load(f)
+            config = json.load(f);
         if config.get("enabled"):
             run_com = root_path + "/venv/bin/python3 " + root_path + "/motion.py &";
             print(f"motion.py is enabled in config. Starting... with {run_com}", flush=True)
             # We need to change this to use the local
-            start_motion();
+            enable_motion();
 
     socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
