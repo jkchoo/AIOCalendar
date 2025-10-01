@@ -115,10 +115,10 @@ echo "[*] Reloading systemd..."
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 
-# -------- Enable & Start Service --------
-echo "[*] Enabling and starting $SERVICE_NAME..."
-sudo systemctl enable "$SERVICE_NAME"
-sudo systemctl restart "$SERVICE_NAME"
+## -------- Enable & Start Service --------
+#echo "[*] Enabling and starting $SERVICE_NAME..."
+#sudo systemctl enable "$SERVICE_NAME"
+#sudo systemctl restart "$SERVICE_NAME"
 
 # -------- Status --------
 echo "[*] Checking service status..."
