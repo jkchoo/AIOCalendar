@@ -43,9 +43,27 @@ def get_brightness_path():
 
 # Start the motion detection program
 def enable_motion():
-    #run_com = "cp Motion.desktop " + motion_autostart_path;
     try:
-        run_com = "sudo systemctl enable motion.service; sudo systemctl daemon-reload; sudo systemctl start motion.service;";
+        #Enable
+        run_com = "sudo systemctl enable motion.service";
+        print(f"Starting with command \n{run_com}\n");
+        code, _, err = run_command(run_com);
+        print(f"Motion enabled with {code}");
+        if code != 0:
+            print(f"Failed to enable motion.py: {err}", flush=True)
+            return "Failed to enable motion.py", 500;
+
+        #Reload
+        run_com = "sudo systemctl daemon-reload";
+        print(f"Starting with command \n{run_com}\n");
+        code, _, err = run_command(run_com);
+        print(f"Motion enabled with {code}");
+        if code != 0:
+            print(f"Failed to enable motion.py: {err}", flush=True)
+            return "Failed to enable motion.py", 500;
+
+        #Start
+        run_com = "sudo systemctl start motion.service";
         print(f"Starting with command \n{run_com}\n");
         code, _, err = run_command(run_com);
         print(f"Motion enabled with {code}");
@@ -60,9 +78,28 @@ def enable_motion():
 
 # Stop the motion detection program
 def disable_motion():
-    run_com = "sudo systemctl stop motion.service; sudo systemctl disable motion.service; sudo systemctl daemon-reload;";
-    print(f"Stopping with command \n{run_com}\n");
     try:
+        #Stop
+        run_com = "sudo systemctl stop motion.service";
+        print(f"Stopping with command \n{run_com}\n");
+        code, _, err = run_command(run_com);
+        print(f"Motion disabled with {code}");
+        if code != 0:
+            print(f"Failed to disable motion.py: {err}", flush=True)
+            return "Failed to disable motion.py", 500;
+
+        #Disable
+        run_com = "sudo systemctl disable motion.service";
+        print(f"Stopping with command \n{run_com}\n");
+        code, _, err = run_command(run_com);
+        print(f"Motion disabled with {code}");
+        if code != 0:
+            print(f"Failed to disable motion.py: {err}", flush=True)
+            return "Failed to disable motion.py", 500;
+
+        #Reload
+        run_com = "sudo systemctl daemon-reload";
+        print(f"Stopping with command \n{run_com}\n");
         code, _, err = run_command(run_com);
         print(f"Motion disabled with {code}");
         if code != 0:
