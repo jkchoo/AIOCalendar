@@ -1,10 +1,10 @@
-import os
-import json
-import subprocess
-from flask import Flask, request, jsonify, send_from_directory
-from flask_socketio import SocketIO
-import sys
-import logging
+import os;
+import json;
+import subprocess;
+from flask import Flask, request, jsonify, send_from_directory;
+from flask_socketio import SocketIO;
+import sys;
+import logging;
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -12,17 +12,17 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s"
 );
 
-app = Flask(__name__, static_folder="public")
-app.logger.setLevel(logging.DEBUG)
-socketio = SocketIO(app)
+app = Flask(__name__, static_folder="public");
+app.logger.setLevel(logging.DEBUG);
+socketio = SocketIO(app);
 
 # Paths
 root_path = os.path.dirname(os.path.abspath(__file__));
 config_path = os.path.join(root_path, "motion_config.json");
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static");
 
 with open(os.path.join(root_path, "home_file.conf"), "r") as f:
-    home_path = f.readline().strip()
+    home_path = f.readline().strip();
 
 kiosk_path = os.path.join(home_path, "Kiosk.desktop");
 kiosk_config = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk";
@@ -31,12 +31,12 @@ kiosk_config = "Exec=env MOZ_USE_XINPUT2=1 firefox --kiosk";
 
 # ---------- Helpers ----------
 def get_brightness_path():
-    base_path = "/sys/class/backlight"
+    base_path = "/sys/class/backlight";
     try:
-        entries = os.listdir(base_path)
+        entries = os.listdir(base_path);
         if not entries:
-            return None
-        return os.path.join(base_path, entries[0], "brightness")
+            return None;
+        return os.path.join(base_path, entries[0], "brightness");
     except Exception as e:
         print(f"Unable to locate brightness control: {e}", flush=True)
         return None
@@ -50,7 +50,7 @@ def enable_motion():
         code, _, err = run_command(run_com);
         print(f"Motion enabled with {code}");
         if code != 0:
-            print(f"Failed to enable motion.py: {err}", flush=True)
+            print(f"Failed to enable motion.py: {err}", flush=True);
             return "Failed to enable motion.py", 500;
 
         #Reload
@@ -59,7 +59,7 @@ def enable_motion():
         code, _, err = run_command(run_com);
         print(f"Motion enabled with {code}");
         if code != 0:
-            print(f"Failed to enable motion.py: {err}", flush=True)
+            print(f"Failed to enable motion.py: {err}", flush=True);
             return "Failed to enable motion.py", 500;
 
         #Start
@@ -68,7 +68,7 @@ def enable_motion():
         code, _, err = run_command(run_com);
         print(f"Motion enabled with {code}");
         if code != 0:
-            print(f"Failed to enable motion.py: {err}", flush=True)
+            print(f"Failed to enable motion.py: {err}", flush=True);
             return "Failed to enable motion.py", 500;
     except Exception as e:
         print(f"Failed to enable motion with exception {e}", flush=True);
@@ -85,7 +85,7 @@ def disable_motion():
         code, _, err = run_command(run_com);
         print(f"Motion disabled with {code}");
         if code != 0:
-            print(f"Failed to disable motion.py: {err}", flush=True)
+            print(f"Failed to disable motion.py: {err}", flush=True);
             return "Failed to disable motion.py", 500;
 
         #Disable
@@ -94,7 +94,7 @@ def disable_motion():
         code, _, err = run_command(run_com);
         print(f"Motion disabled with {code}");
         if code != 0:
-            print(f"Failed to disable motion.py: {err}", flush=True)
+            print(f"Failed to disable motion.py: {err}", flush=True);
             return "Failed to disable motion.py", 500;
 
         #Reload
@@ -103,7 +103,7 @@ def disable_motion():
         code, _, err = run_command(run_com);
         print(f"Motion disabled with {code}");
         if code != 0:
-            print(f"Failed to disable motion.py: {err}", flush=True)
+            print(f"Failed to disable motion.py: {err}", flush=True);
             return "Failed to disable motion.py", 500;
     except Exception as e:
         print(f"Failed to disable motion with exception {e}", flush=True);
@@ -116,63 +116,63 @@ def get_max_brightness(path_to_device):
     try:
         max_path = path_to_device.replace("/brightness", "/max_brightness")
         with open(max_path, "r") as f:
-            return int(f.read().strip())
+            return int(f.read().strip());
     except Exception:
-        print("Could not read max_brightness", flush=True)
-        return None
+        print("Could not read max_brightness", flush=True);
+        return None;
 
-
+# ----------- Function to allow the server to run code on the system -----
 def run_command(cmd, cwd=None):
     try:
         result = subprocess.run(
             cmd, cwd=cwd, shell=True, capture_output=True, text=True
-        )
+        );
         return result.returncode, result.stdout, result.stderr
     except Exception as e:
-        return 1, "", str(e)
+        return 1, "", str(e);
 
 
-# ---------- Middleware ----------
+# ---------- Log where the requests are coming from ----------
 @app.before_request
 def log_request():
-    print(f"Request from {request.remote_addr} with URL {request.path}", flush=True)
+    print(f"Request from {request.remote_addr} with URL {request.path}", flush=True);
 
 
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return send_from_directory(os.path.join(root_path, "static"), "index.html")
+    return send_from_directory(os.path.join(root_path, "static"), "index.html");
 
 @app.route("/<path:filename>")
 def serve_static(filename):
-    return send_from_directory(STATIC_DIR, filename)
+    return send_from_directory(STATIC_DIR, filename);
 
 @app.route("/update", methods=["POST"], strict_slashes=False)
 def update():
-    print("Starting update from Git...", flush=True)
-    socketio.start_background_task(target=do_update)
-    return "Update started. Service will restart if update is successful.", 200
+    print("Starting update from Git...", flush=True);
+    socketio.start_background_task(target=do_update);
+    return "Update started. Service will restart if update is successful.", 200;
 
 
 def do_update():
-    code, out, err = run_command("sudo git pull", cwd=root_path)
-    print(f"Git output: {out}, {err}", flush=True)
+    code, out, err = run_command("sudo git pull", cwd=root_path);
+    print(f"Git output: {out}, {err}", flush=True);
     if code == 0:
-        print("Git pull complete. Restarting webui.service...", flush=True)
-        run_command("sudo systemctl restart webui.service")
+        print("Git pull complete. Restarting webui.service...", flush=True);
+        run_command("sudo systemctl restart webui.service");
     else:
-        print("Git pull failed.", flush=True)
+        print("Git pull failed.", flush=True);
 
 
 @app.route("/reboot", methods=["POST"], strict_slashes=False)
 def reboot():
     try:
-        print("Rebooting now", flush=True)
-        subprocess.Popen("sudo reboot now", shell=True)
-        return "Rebooting now. Check back soon", 200
+        print("Rebooting now", flush=True);
+        subprocess.Popen("sudo reboot now", shell=True);
+        return "Rebooting now. Check back soon", 200;
     except Exception as e:
-        print(f"Error: {e}", flush=True)
-        return f"Error rebooting: {e}", 500
+        print(f"Error: {e}", flush=True);
+        return f"Error rebooting: {e}", 500;
 
 
 @app.route("/motion/enable", methods=["POST"], strict_slashes=False)
@@ -195,18 +195,18 @@ def motion_enable():
 
 @app.route("/motion/disable", methods=["POST"], strict_slashes=False)
 def motion_disable():
-    print(f"Disabling motion.py from {request.remote_addr}", flush=True)
+    print(f"Disabling motion.py from {request.remote_addr}", flush=True);
     try:
-        config = {}
+        config = {};
         if os.path.exists(config_path):
             with open(config_path, "r") as f:
-                config = json.load(f)
-        config["enabled"] = False
+                config = json.load(f);
+        config["enabled"] = False;
         with open(config_path, "w") as f:
-            json.dump(config, f, indent=2)
+            json.dump(config, f, indent=2);
     except Exception as e:
-        print(f"Error writing motion config: {e}", flush=True)
-        return "Failed to update config", 500
+        print(f"Error writing motion config: {e}", flush=True);
+        return "Failed to update config", 500;
 
     # Do the disabling
     return disable_motion();
@@ -218,157 +218,157 @@ def motion_disable():
 @app.route("/motion/threshold/<value>", methods=["POST"], strict_slashes=False)
 def motion_threshold(value):
     try:
-        threshold = float(value)
+        threshold = float(value);
     except ValueError:
-        return "Invalid threshold", 400
+        return "Invalid threshold", 500;
 
     try:
-        config = {}
+        config = {};
         if os.path.exists(config_path):
             with open(config_path, "r") as f:
-                config = json.load(f)
-        config["threshold"] = threshold
+                config = json.load(f);
+        config["threshold"] = threshold;
         with open(config_path, "w") as f:
-            json.dump(config, f, indent=2)
-        print(f"Updated motion threshold to {threshold}", flush=True)
+            json.dump(config, f, indent=2);
+        print(f"Updated motion threshold to {threshold}", flush=True);
 
         # Use the new threshold value
         restart_motion();
 
-        return "Threshold updated", 200
+        return "Threshold updated", 200;
     except Exception as e:
-        print(f"Error writing threshold: {e}", flush=True)
-        return "Failed to update threshold", 500
+        print(f"Error writing threshold: {e}", flush=True);
+        return "Failed to update threshold", 500;
 
 
 @app.route("/motion/config")
 def motion_config():
     if not os.path.exists(config_path):
-        return jsonify({"error": "Motion config not found"}), 404
+        return jsonify({"error": "Motion config not found"}), 500;
     try:
         with open(config_path, "r") as f:
-            config = json.load(f)
+            config = json.load(f);
         return jsonify(
             {"enabled": config.get("enabled"), "threshold": config.get("threshold")}
-        )
+        );
     except Exception as e:
-        return jsonify({"error": "Failed to read motion config"}), 500
+        return jsonify({"error": "Failed to read motion config"}), 500;
 
 
 @app.route("/screen/brightness/<int:value>", methods=["POST"], strict_slashes=False)
 def screen_brightness(value):
-    brightness_path = get_brightness_path()
+    brightness_path = get_brightness_path();
     if not brightness_path:
-        return "Brightness control not available", 500
+        return "Brightness control not available", 500;
 
-    max_brightness = get_max_brightness(brightness_path)
+    max_brightness = get_max_brightness(brightness_path);
     if max_brightness is not None and (value < 0 or value > max_brightness):
-        return f"Brightness must be between 0 and {max_brightness}", 400
+        return f"Brightness must be between 0 and {max_brightness}", 500;
 
-    code, _, err = run_command(f"echo {value} | sudo tee {brightness_path}")
+    code, _, err = run_command(f"echo {value} | sudo tee {brightness_path}");
     if code != 0:
-        print(f"Failed to set brightness:{err}", flush=True)
-        return "Failed to set brightness", 500
+        print(f"Failed to set brightness:{err}", flush=True);
+        return "Failed to set brightness", 500;
 
-    print(f"Brightness set to {value}", flush=True)
-    return "Brightness updated", 200
+    print(f"Brightness set to {value}", flush=True);
+    return "Brightness updated", 200;
 
 
 @app.route("/screen/brightness")
 def get_brightness():
-    brightness_path = get_brightness_path()
+    brightness_path = get_brightness_path();
     if not brightness_path:
-        return jsonify({"error": "Brightness control not available"}), 500
+        return jsonify({"error": "Brightness control not available"}), 500;
 
-    max_brightness = get_max_brightness(brightness_path)
+    max_brightness = get_max_brightness(brightness_path);
     if max_brightness is None:
-        return jsonify({"error": "Unable to read max brightness"}), 500
+        return jsonify({"error": "Unable to read max brightness"}), 500;
 
     try:
         with open(brightness_path, "r") as f:
-            current = int(f.read().strip())
-        return jsonify({"current": current, "max": max_brightness})
+            current = int(f.read().strip());
+        return jsonify({"current": current, "max": max_brightness});
     except Exception as e:
-        print(f"Error reading current brightness: {e}", flush=True)
-        return jsonify({"error": "Unable to read current brightness"}), 500
+        print(f"Error reading current brightness: {e}", flush=True);
+        return jsonify({"error": "Unable to read current brightness"}), 500;
 
 
 @app.route("/screen/timeout/<int:minutes>", methods=["POST"], strict_slashes=False)
 def set_timeout(minutes):
-    seconds = minutes * 60
-    cmd = f"gsettings set org.gnome.desktop.session idle-delay {seconds}"
-    code, _, err = run_command(cmd)
+    seconds = minutes * 60;
+    cmd = f"gsettings set org.gnome.desktop.session idle-delay {seconds}";
+    code, _, err = run_command(cmd);
     if code != 0:
-        return "Failed to set screen timeout in GNOME", 500
-    return "GNOME screen timeout updated", 200
+        return "Failed to set screen timeout in GNOME", 500;
+    return "GNOME screen timeout updated", 200;
 
 
 @app.route("/screen/timeout")
 def get_timeout():
-    code, out, err = run_command("gsettings get org.gnome.desktop.session idle-delay")
+    code, out, err = run_command("gsettings get org.gnome.desktop.session idle-delay");
     if code != 0:
-        return jsonify({"error": "Failed to read GNOME screen timeout"}), 500
+        return jsonify({"error": "Failed to read GNOME screen timeout"}), 500;
     try:
-        seconds = int(out.strip().split()[-1])
-        minutes = seconds // 60
-        return jsonify({"timeout": minutes})
+        seconds = int(out.strip().split()[-1]);
+        minutes = seconds // 60;
+        return jsonify({"timeout": minutes});
     except Exception:
-        return jsonify({"error": "Failed to parse timeout"}), 500
+        return jsonify({"error": "Failed to parse timeout"}), 500;
 
 # ---------------- Set the new kiosk home screen ---------------
 @app.route("/newhomescreen", methods=["POST"], strict_slashes=False)
 def new_homescreen():
     try:
         # Get the post data from the request
-        data = request.get_json()
-        url = data.get("url", "")
+        data = request.get_json();
+        url = data.get("url", "");
 
         # Ensure that a new url is being set
         if not url:
-            raise ValueError("Homescreen URL is blank")
+            raise ValueError("Homescreen URL is blank");
 
         if not os.path.exists(kiosk_path):
-            raise FileNotFoundError(f"Kiosk can't be updated {kiosk_path}")
+            raise FileNotFoundError(f"Kiosk can't be updated {kiosk_path}");
 
         # Read in the files
         with open(kiosk_path, "r") as f:
-            lines = f.readlines()
+            lines = f.readlines();
 
         # Update the configuration for startup script
         for i, line in enumerate(lines):
             if kiosk_config in line:
-                parts = line.split(" ")
+                parts = line.split(" ");
                 parts[-1] = url + "\n";
-                lines[i] = " ".join(parts)
+                lines[i] = " ".join(parts);
 
         # Write the data to the kiosk startup
         with open(kiosk_path, "w") as f:
-            f.writelines(lines)
+            f.writelines(lines);
 
         # All done
-        return "Homescreen updated", 200
+        return "Homescreen updated", 200;
     except Exception as e:
         # Send the 500 back from the server
-        return jsonify({"error": "Could not update homescreen", "details": str(e)}), 500
+        return jsonify({"error": "Could not update homescreen", "details": str(e)}), 500;
 
 # ---------- Retrieve the set kiosk home screen -------------
 @app.route("/homescreen")
 def homescreen():
     try:
         if not os.path.exists(kiosk_path):
-            raise FileNotFoundError(f"Kiosk file isn't found {kiosk_path}")
+            raise FileNotFoundError(f"Kiosk file isn't found {kiosk_path}");
 
         with open(kiosk_path, "r") as f:
             for line in f:
                 if kiosk_config in line:
-                    homescreen_url = line.split(" ")[-1].strip()
+                    homescreen_url = line.split(" ")[-1].strip();
                     if not homescreen_url:
-                        raise ValueError("Homescreen URL is blank")
-                    return jsonify({"url": homescreen_url}), 200
+                        raise ValueError("Homescreen URL is blank");
+                    return jsonify({"url": homescreen_url}), 200;
 
-        raise ValueError("Homescreen URL not found in file")
+        raise ValueError("Homescreen URL not found in file");
     except Exception as e:
-        return jsonify({"error": "Could not find homescreen", "details": str(e)}), 500
+        return jsonify({"error": "Could not find homescreen", "details": str(e)}), 500;
 
 
 # ---------- Socket.IO ----------
@@ -396,8 +396,8 @@ if __name__ == "__main__":
             config = json.load(f);
         if config.get("enabled"):
             run_com = root_path + "/venv/bin/python3 " + root_path + "/motion.py &";
-            print(f"motion.py is enabled in config. Starting... with {run_com}", flush=True)
+            print(f"motion.py is enabled in config. Starting... with {run_com}", flush=True);
             # We need to change this to use the local
             enable_motion();
 
-    socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True);

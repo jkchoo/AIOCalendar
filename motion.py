@@ -67,7 +67,7 @@ def detectMotion():
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cameraResolution['height']);
 
         # Get the FPS
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        fps = cap.get(cv2.CAP_PROP_FPS);
         # Define FPS counter
         frameCounter = 0;
         rollingAverage = [];
@@ -78,7 +78,7 @@ def detectMotion():
         # Define the threshold to detect motion
         #We need to read this in through a file
         threshold = config["threshold"];
-        print(f"Threshold is set to {threshold}")
+        print(f"Threshold is set to {threshold}");
         # Start the loop
         while am_i_running:
             ret, frame = cap.read();
@@ -90,7 +90,7 @@ def detectMotion():
                 if (cv2.waitKey(1) & 0xFF == ord('q')):
                     break;
             except:
-                print("Can't show the camera output")
+                print("Can't show the camera output");
                 with open(logLoc, 'a') as file:
                     now = datetime.now();
                     file.write(f"Can't show the  camera output at {now}");
@@ -111,15 +111,15 @@ def detectMotion():
                 #global logLoc;
                 #global fontToUse;
                 with open(logLoc, 'a') as file:
-                  file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
-                curr = now.strftime("%y-%m-%d %H-%M-%S")
+                  file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n");
+                curr = now.strftime("%y-%m-%d %H-%M-%S");
 
                 # Decide if we should store image files for debugging
                 if config["debug"]:
                     motionPath = os.path.join(root_path, 'motion/');
                     if not os.path.exists(motionPath):
                         #Then we need to make the folder
-                        os.makedirs(motionPath, exist_ok=True)
+                        os.makedirs(motionPath, exist_ok=True);
                     imgFile = motionPath + curr + '.jpg';
                     #print(imgFile)
                     #newFrame = np.rot90(frame)
@@ -131,10 +131,10 @@ def detectMotion():
                             fontToUse['color'],
                             fontToUse['thickness'],
                             fontToUse['lineType'])
-                    cv2.imwrite(imgFile,np.rot90(frame))
+                    cv2.imwrite(imgFile,np.rot90(frame));
 
             # Store the new difference
-            lastMeanValueOfFrame = np.mean(frame)
+            lastMeanValueOfFrame = np.mean(frame);
 
             if frameCounter == fps:
                 frameCounter = 0
@@ -142,24 +142,24 @@ def detectMotion():
                 global avgDiffLimit;
                 avgDiffCounter += 1;
                 if avgDiffCounter == avgDiffLimit:
-                    avgDiffCounter = 0
-                    averageChange = np.mean(rollingAverage)
+                    avgDiffCounter = 0;
+                    averageChange = np.mean(rollingAverage);
                     # Clear out the rolling average
                     rollingAverage = [];
                     with open(valLoc, 'a') as file:
-                        file.write(f"Average difference at {now} is {averageChange}\n")
+                        file.write(f"Average difference at {now} is {averageChange}\n");
                 #print(f"{frameCounter} {avgDiffCounter}")
 
             #time.sleep(.125)
     except Exception as e:
-        print(f"Crash from {e}")
+        print(f"Crash from {e}");
         with open(logLoc, 'a') as file:
             now = datetime.now();
-            file.write(f"Program crashed at {now} with error {e}\n")
+            file.write(f"Program crashed at {now} with error {e}\n");
     finally:
         # Release the camera
-        cap.release()
-        cv2.destroyAllWindows()
+        cap.release();
+        cv2.destroyAllWindows();
 
 if __name__ == "__main__":
     if config["enabled"]:
