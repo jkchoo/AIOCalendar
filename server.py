@@ -392,4 +392,4 @@ if __name__ == "__main__":
             # We need to change this to use the local
             enable_motion();
 
-    socketio.run(app, host="0.0.0.0", port=80, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=8080, allow_unsafe_werkzeug=True)
