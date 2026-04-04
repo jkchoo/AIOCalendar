@@ -1,15 +1,32 @@
 # import the necessary packages
+import os;
+import json;
 import cv2;
-import gradio as gr;
+#import gradio as gr;
 import numpy as np;
 import time;
 from datetime import datetime;
 import pyautogui;
 #import matplotlib.pyplot as plt
 
+root_path = os.path.dirname(os.path.abspath(__file__));
 # Log file location
-logLoc = '~/motion/motion.log';
-valLoc = "~/motion/values.log";
+logLoc = os.path.join(root_path, "motion.log");
+valLoc = os.path.join(root_path, "values.log");
+# Config file location
+config_path = os.path.join(root_path, "motion_config.json");
+config = {};
+
+try:
+    if os.path.exists(config_path):
+        with open(config_path, "r") as fil:
+            config = json.load(fil);
+except Exception as e:
+    print(f"Error reading motion config: {e}", flush=True)
+    config["threshold"] = 5;
+    config["enabled"] = False;
+    config["debug"] = False;
+
 
 # How often I want to see the averageDifference
 avgDiffCounter = 0;
@@ -29,96 +46,121 @@ fontToUse = {
     'thickness': 2
 }
 
+am_i_running = False;
+
+def stopMotion():
+    global am_i_running;
+    am_i_running = False;
+
 def detectMotion():
+    global am_i_running;
+    am_i_running = True;
+    print("Starting motion detction");
     # Open the camera stream
     try:
-        global cameraResolution;
+        with open(logLoc, 'a') as file:
+            now = datetime.now();
+            file.write(f"starting {now}");
+        print("Starting");
         cap = cv2.VideoCapture(0);
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, cameraResolution['width']);
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cameraResolution['height']);
 
         # Get the FPS
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        fps = cap.get(cv2.CAP_PROP_FPS);
         # Define FPS counter
-        frameCounter = 0
-        rollingAverage = []
+        frameCounter = 0;
+        rollingAverage = [];
         #print(fps)
         # Define the mean value of the webcam feed
-        lastMeanValueOfFrame = 0
+        lastMeanValueOfFrame = 0;
 
         # Define the threshold to detect motion
         #We need to read this in through a file
-        threshold = 5
-
+        threshold = config["threshold"];
+        print(f"Threshold is set to {threshold}");
         # Start the loop
-        while True:
-            ret, frame = cap.read()
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frameCounter += 1
+        while am_i_running:
+            ret, frame = cap.read();
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY);
+            frameCounter += 1;
             try:
-                cv2.imshow('frame',frame)
+                cv2.imshow('frame',frame);
                 # This is needed to show the output of the camera
                 if (cv2.waitKey(1) & 0xFF == ord('q')):
-                    break
+                    break;
             except:
-                print("Can't show the camera output")
+                print("Can't show the camera output");
+                with open(logLoc, 'a') as file:
+                    now = datetime.now();
+                    file.write(f"Can't show the  camera output at {now}");
 
-        # Compute the difference
-        diff = np.abs(np.mean(gray) - lastMeanValueOfFrame)
-        rollingAverage.append(diff)
-        #print(rollingAverage)
-        print(diff)
+            # Compute the difference
+            diff = np.abs(np.mean(gray) - lastMeanValueOfFrame);
+            rollingAverage.append(diff);
+            #print(rollingAverage)
+            #print(diff);
 
-        #print(gray)
-        #print("\n\n\n")
+            #print(gray);
+            #print("\n\n\n");
 
-        now = datetime.now()
+            now = datetime.now();
+            if diff > threshold:
+                #print(f"Motion detected value {diff} at {now}")
+                pyautogui.press('shift');
+                #global logLoc;
+                #global fontToUse;
+                with open(logLoc, 'a') as file:
+                  file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n");
+                curr = now.strftime("%y-%m-%d %H-%M-%S");
 
-        if diff > threshold:
-            #print(f"Motion detected value {diff} at {now}")
-            pyautogui.press('shift');
-            global logLoc;
-            global fontToUse;
-            with open(logLoc, 'a') as file:
-              file.write(f"Motion detected at {now} with a value of {np.floor(diff)}\n")
-            curr = now.strftime("%y-%m-%d %H-%M-%S")
-            imgFile = '/home/mirror/motion/'+curr+'.jpg'
-            #print(imgFile)
-            #newFrame = np.rot90(frame)
-            cv2.putText(frame,
-                    str(np.round(diff,1)),
-                    (10, cameraResolution['height']-10),
-                    fontToUse['face'],
-                    fontToUse['scale'],
-                    fontToUse['color'],
-                    fontToUse['thickness'],
-                    fontToUse['lineType'])
-            cv2.imwrite(imgFile,np.rot90(frame))
-        # Store the new difference
-        lastMeanValueOfFrame = np.mean(frame)
+                # Decide if we should store image files for debugging
+                if config["debug"]:
+                    motionPath = os.path.join(root_path, 'motion/');
+                    if not os.path.exists(motionPath):
+                        #Then we need to make the folder
+                        os.makedirs(motionPath, exist_ok=True);
+                    imgFile = motionPath + curr + '.jpg';
+                    #print(imgFile)
+                    #newFrame = np.rot90(frame)
+                    cv2.putText(frame,
+                            str(np.round(diff,1)),
+                            (10, cameraResolution['height']-10),
+                            fontToUse['face'],
+                            fontToUse['scale'],
+                            fontToUse['color'],
+                            fontToUse['thickness'],
+                            fontToUse['lineType'])
+                    cv2.imwrite(imgFile,np.rot90(frame));
 
-        if frameCounter == fps:
-            frameCounter = 0
-            global avgDiffCounter;
-            global avgDiffLimit;
-            avgDiffCounter += 1;
-            if avgDiffCounter == avgDiffLimit:
-                avgDiffCounter = 0
-                averageChange = np.mean(rollingAverage)
-                # Clear out the rolling average
-                rollingAverage = [];
-                global valLoc;
-                with open(valLoc, 'a') as file:
-                    file.write(f"Average difference at {now} is {averageChange}\n")
-            #print(f"{frameCounter} {avgDiffCounter}")
+            # Store the new difference
+            lastMeanValueOfFrame = np.mean(frame);
 
-        #time.sleep(.125)
+            if frameCounter == fps:
+                frameCounter = 0
+                global avgDiffCounter;
+                global avgDiffLimit;
+                avgDiffCounter += 1;
+                if avgDiffCounter == avgDiffLimit:
+                    avgDiffCounter = 0;
+                    averageChange = np.mean(rollingAverage);
+                    # Clear out the rolling average
+                    rollingAverage = [];
+                    with open(valLoc, 'a') as file:
+                        file.write(f"Average difference at {now} is {averageChange}\n");
+                #print(f"{frameCounter} {avgDiffCounter}")
+
+            #time.sleep(.125)
     except Exception as e:
-        print(f"Crash from {e}")
+        print(f"Crash from {e}");
         with open(logLoc, 'a') as file:
-            now = datetime.now()
-            file.write(f"Program crashed at {now} with error {e}\n")
+            now = datetime.now();
+            file.write(f"Program crashed at {now} with error {e}\n");
     finally:
         # Release the camera
-        cap.release()
-        cv2.destroyAllWindows()
+        cap.release();
+        cv2.destroyAllWindows();
+
+if __name__ == "__main__":
+    if config["enabled"]:
+        detectMotion();
