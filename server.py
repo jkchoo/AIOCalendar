@@ -315,35 +315,43 @@ def get_timeout():
     except Exception:
         return jsonify({"error": "Failed to parse timeout"}), 500
 
-
+# ---------------- Set the new kiosk home screen ---------------
 @app.route("/newhomescreen", methods=["POST"], strict_slashes=False)
 def new_homescreen():
     try:
+        # Get the post data from the request
         data = request.get_json()
         url = data.get("url", "")
+
+        # Ensure that a new url is being set
+        if not url:
+            raise ValueError("Homescreen URL is blank")
+
         if not os.path.exists(kiosk_path):
             raise FileNotFoundError(f"Kiosk can't be updated {kiosk_path}")
 
+        # Read in the files
         with open(kiosk_path, "r") as f:
             lines = f.readlines()
 
+        # Update the configuration for startup script
         for i, line in enumerate(lines):
             if kiosk_config in line:
                 parts = line.split(" ")
                 parts[-1] = url + "\n";
                 lines[i] = " ".join(parts)
 
-        if not url:
-            raise ValueError("Homescreen URL is blank")
-
+        # Write the data to the kiosk startup
         with open(kiosk_path, "w") as f:
             f.writelines(lines)
 
+        # All done
         return "Homescreen updated", 200
     except Exception as e:
+        # Send the 500 back from the server
         return jsonify({"error": "Could not update homescreen", "details": str(e)}), 500
 
-
+# ---------- Retrieve the set kiosk home screen -------------
 @app.route("/homescreen")
 def homescreen():
     try:
@@ -364,23 +372,23 @@ def homescreen():
 
 
 # ---------- Socket.IO ----------
-@socketio.on("connect")
-def handle_connect():
-    print("Client connected", flush=True)
+#@socketio.on("connect")
+#def handle_connect():
+#    print("Client connected", flush=True)
 
 
-@socketio.on("disconnect")
-def handle_disconnect():
-    print("Client disconnected", flush=True)
+#@socketio.on("disconnect")
+#def handle_disconnect():
+#    print("Client disconnected", flush=True)
 
 
-@socketio.on("join")
-def handle_join(room):
-    print(f"Client joined room: {room}", flush=True)
+#@socketio.on("join")
+#def handle_join(room):
+#    print(f"Client joined room: {room}", flush=True)
     # flask_socketio join_room(room) if needed
 
 
-# ---------- Startup ----------
+# -------------- Startup --------------
 if __name__ == "__main__":
     # Auto-start motion if enabled
     if os.path.exists(config_path):
